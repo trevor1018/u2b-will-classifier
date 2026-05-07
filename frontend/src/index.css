@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet 暗黑底圖補強 */
+.leaflet-container {
+  background: #06080d;
+  font-family: inherit;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #111827;
+  color: #f3f4f6;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.leaflet-control-attribution {
+  background: rgba(11, 16, 24, 0.8) !important;
+  color: #9ca3af !important;
+}
+.leaflet-control-attribution a {
+  color: #60a5fa !important;
+}
+.leaflet-control-zoom a {
+  background: #0b1018 !important;
+  color: #f3f4f6 !important;
+  border-color: #1f2937 !important;
+}
+
+/* vis-timeline 暗黑主題 */
+.vis-timeline {
+  border: none !important;
+  background: transparent;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  color: #d1d5db;
+}
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-panel.vis-right,
+.vis-panel.vis-top,
+.vis-panel.vis-bottom {
+  border-color: #1f2937 !important;
+}
+.vis-time-axis .vis-text {
+  color: #9ca3af !important;
+}
+.vis-time-axis .vis-grid {
+  border-color: #1f2937 !important;
+}
+.vis-item {
+  border-radius: 4px !important;
+  border-color: rgba(163, 230, 53, 0.4) !important;
+  background: rgba(163, 230, 53, 0.18) !important;
+  color: #f3f4f6 !important;
+}
+.vis-item.vis-selected {
+  border-color: #a3e635 !important;
+  background: rgba(163, 230, 53, 0.35) !important;
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.3);
+}
+.vis-current-time {
+  background-color: #f87171 !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1018;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}
+
+/* 「檔案夾」案件卡片風格 */
+.case-card {
+  position: relative;
+  background: linear-gradient(180deg, #111827 0%, #0b1018 100%);
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.case-card:hover {
+  border-color: #a3e635;
+  box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.2), 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+.evidence-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #a3e635;
+}
