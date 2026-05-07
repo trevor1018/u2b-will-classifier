@@ -12,7 +12,8 @@ interface FilterState {
   /** Active filters (empty set = all) */
   caseTypes: Set<CaseType>;
   statuses: Set<CaseStatus>;
-  countries: Set<string>;
+  /** Single-select country (null = all). When set, the map zooms to it. */
+  country: string | null;
   yearRange: [number, number] | null; // by crimeYear; null = all
   searchText: string;
   /** Currently focused case (clicked from any view). null = none. */
@@ -38,7 +39,7 @@ export const useStore = create<FilterState>((set) => ({
   error: null,
   caseTypes: new Set(),
   statuses: new Set(),
-  countries: new Set(),
+  country: null,
   yearRange: null,
   searchText: "",
   focusedCaseId: null,
@@ -61,11 +62,7 @@ export const useStore = create<FilterState>((set) => ({
       return { statuses: next };
     }),
   toggleCountry: (c) =>
-    set((s) => {
-      const next = new Set(s.countries);
-      next.has(c) ? next.delete(c) : next.add(c);
-      return { countries: next };
-    }),
+    set((s) => ({ country: s.country === c ? null : c })),
   setYearRange: (r) => set({ yearRange: r }),
   setSearchText: (q) => set({ searchText: q }),
   focusCase: (id) => set({ focusedCaseId: id }),
@@ -73,7 +70,7 @@ export const useStore = create<FilterState>((set) => ({
     set({
       caseTypes: new Set(),
       statuses: new Set(),
-      countries: new Set(),
+      country: null,
       yearRange: null,
       searchText: "",
       focusedCaseId: null,
@@ -82,12 +79,12 @@ export const useStore = create<FilterState>((set) => ({
 
 /** Apply all active filters to the case list. Pure (no Zustand deps). */
 export function applyFilters(state: FilterState): CaseRecord[] {
-  const { cases, caseTypes, statuses, countries, yearRange, searchText } = state;
+  const { cases, caseTypes, statuses, country, yearRange, searchText } = state;
   const q = searchText.trim().toLowerCase();
   return cases.filter((c) => {
     if (caseTypes.size > 0 && !caseTypes.has(c.caseType)) return false;
     if (statuses.size > 0 && !statuses.has(c.status)) return false;
-    if (countries.size > 0 && (!c.country || !countries.has(c.country))) return false;
+    if (country && c.country !== country) return false;
     if (yearRange && c.crimeYear) {
       if (c.crimeYear < yearRange[0] || c.crimeYear > yearRange[1]) return false;
     }

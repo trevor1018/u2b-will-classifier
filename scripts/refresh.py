@@ -290,7 +290,7 @@ def to_int(s: Any) -> int:
 
 # Frontend's known case types — anything outside this is normalised below.
 KNOWN_CASE_TYPES = {
-    "murder", "missing", "serial", "cult", "fraud", "robbery",
+    "murder", "missing", "serial", "cult", "fraud", "robbery", "escape",
     "disaster", "mystery", "kidnap", "curio", "other",
 }
 # Maps LLM-invented synonyms onto our supported set.
@@ -300,7 +300,6 @@ CASE_TYPE_ALIASES = {
     "attack": "murder",
     "child_abuse": "other",
     "poison": "murder",
-    "escape": "curio",
     "stalking": "other",
     "arson": "other",
     "extortion": "fraud",
@@ -308,8 +307,141 @@ CASE_TYPE_ALIASES = {
     "assault": "murder",
     "homicide": "murder",
     "scam": "fraud",
+    "jailbreak": "escape",
+    "prison_break": "escape",
+    "fugitive": "escape",
 }
 KNOWN_STATUSES = {"solved", "cold", "partial", "exonerated", "ongoing", "unknown"}
+
+# Strong keywords (anything containing these = escape case, no further check)
+ESCAPE_KEYWORDS = ("越獄", "越狱", "逃獄", "脫獄", "脱獄", "越牢", "獄逃")
+# Weaker keywords — only count as escape when paired with prison context
+ESCAPE_CONTEXT_KEYWORDS = ("逃亡", "逃跑", "逃離", "潜逃", "潛逃")
+PRISON_KEYWORDS = ("監獄", "监狱", "囚犯", "獄友", "獄卒", "牢", "監禁", "服刑", "犯人", "罪犯")
+
+
+def post_classify_escape(title: str, case_name: str, current_type: str) -> str:
+    """Override LLM classification to 'escape' when title or caseName clearly
+    indicates a jailbreak / fugitive case. Bucketing fugitive-from-prison
+    cases as 'other' was a recurring miss in the first-pass LLM run.
+    """
+    if current_type == "escape":
+        return current_type
+    haystack = f"{title} {case_name}"
+    if any(k in haystack for k in ESCAPE_KEYWORDS):
+        return "escape"
+    # caseName usually distils the case essence — if 逃亡 ends up there, this
+    # is almost always a fugitive case (X調查's content domain is crime, not
+    # refugees / war). So treat caseName-level 逃亡 as a strong signal.
+    if any(k in case_name for k in ESCAPE_CONTEXT_KEYWORDS):
+        return "escape"
+    # Title-level 逃亡 is weaker — pair with prison context to avoid false
+    # positives.
+    if any(k in title for k in ESCAPE_CONTEXT_KEYWORDS) and any(
+        k in title for k in PRISON_KEYWORDS
+    ):
+        return "escape"
+    return current_type
+
+
+# Different writings of the same country — collapse to a canonical zh-Hant form
+COUNTRY_CANONICAL = {
+    # 簡 → 繁
+    "美国": "美國",
+    "英国": "英國",
+    "德国": "德國",
+    "中国": "中國",
+    "法国": "法國",
+    "韩国": "韓國",
+    "俄罗斯": "俄羅斯",
+    "意大利": "義大利",
+    "葡萄牙": "葡萄牙",
+    "西班牙": "西班牙",
+    "印度": "印度",
+    "希腊": "希臘",
+    "希腊": "希臘",
+    # 同義異名
+    "澳大利亞": "澳洲",
+    "澳大利亚": "澳洲",
+    "新西蘭": "紐西蘭",
+    "新西兰": "紐西蘭",
+    "印尼": "印尼",
+    "印度尼西亞": "印尼",
+    "印度尼西亚": "印尼",
+    "孟加拉國": "孟加拉",
+    "孟加拉国": "孟加拉",
+    "老撾": "寮國",
+    "老挝": "寮國",
+    "比利时": "比利時",
+    "瑞典": "瑞典",
+    "挪威": "挪威",
+    "丹麦": "丹麥",
+    "捷克": "捷克",
+    "波兰": "波蘭",
+    "匈牙利": "匈牙利",
+    "土耳其": "土耳其",
+    "墨西哥": "墨西哥",
+    "巴西": "巴西",
+    "阿根廷": "阿根廷",
+    "智利": "智利",
+    "秘鲁": "秘魯",
+    "哥伦比亚": "哥倫比亞",
+    "委內瑞拉": "委內瑞拉",
+    "南非": "南非",
+    "肯尼亚": "肯亞",
+    "肯亚": "肯亞",
+    "尼日利亚": "奈及利亞",
+    "尼日利亞": "奈及利亞",
+    "奈及利亚": "奈及利亞",
+    "埃及": "埃及",
+    "摩洛哥": "摩洛哥",
+    "尼泊尔": "尼泊爾",
+    "巴基斯坦": "巴基斯坦",
+    "伊朗": "伊朗",
+    "伊拉克": "伊拉克",
+    "以色列": "以色列",
+    "沙特阿拉伯": "沙烏地阿拉伯",
+    "沙乌地阿拉伯": "沙烏地阿拉伯",
+    "阿联酋": "阿聯",
+    "阿聯酋": "阿聯",
+    "缅甸": "緬甸",
+    "柬埔寨": "柬埔寨",
+    "越南": "越南",
+    "马来西亚": "馬來西亞",
+    "新加坡": "新加坡",
+    "菲律宾": "菲律賓",
+    "台湾": "台灣",
+    "臺灣": "台灣",
+    "香港": "香港",
+    "澳门": "澳門",
+    "蘇聯": "蘇聯",
+    "苏联": "蘇聯",
+    "南斯拉夫": "南斯拉夫",
+    "羅馬尼亞": "羅馬尼亞",
+    "罗马尼亚": "羅馬尼亞",
+    "保加利亞": "保加利亞",
+    "保加利亚": "保加利亞",
+    "烏克蘭": "烏克蘭",
+    "乌克兰": "烏克蘭",
+    "白俄羅斯": "白俄羅斯",
+    "白俄罗斯": "白俄羅斯",
+    "波蘭": "波蘭",
+    "塞爾維亞": "塞爾維亞",
+    "塞尔维亚": "塞爾維亞",
+}
+
+
+def normalize_country(c: str | None) -> str | None:
+    if not c:
+        return None
+    c = c.strip()
+    if not c:
+        return None
+    # Sometimes LLM returns "美國加州" — strip suffix to canonical country name
+    for canonical in set(COUNTRY_CANONICAL.values()):
+        if c.startswith(canonical) and len(c) > len(canonical):
+            return canonical
+    return COUNTRY_CANONICAL.get(c, c)
 
 
 def normalize_case_type(t: str | None) -> str:
@@ -346,14 +478,26 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
             or thumbs.get("default", {}).get("url")
             or f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
         )
+        country = normalize_country(cl.get("country"))
+
         # If the LLM didn't give us coords, fall back to country centroid so
         # the case still appears on the map.
         lat = cl.get("lat")
         lon = cl.get("lon")
-        if (lat is None or lon is None) and cl.get("country"):
-            fb = geo_lookup(cl.get("country"), cl.get("city"))
+        if (lat is None or lon is None) and country:
+            fb = geo_lookup(country, cl.get("city"))
             if fb:
                 lat, lon = fb
+
+        case_type = normalize_case_type(cl.get("caseType"))
+        # Title/caseName-keyword fallback for the escape category — LLM tended
+        # to bucket 越獄/逃亡 as "other" since the original schema didn't have
+        # escape as a separate type.
+        case_type = post_classify_escape(
+            sn.get("title", ""),
+            cl.get("caseName") or "",
+            case_type,
+        )
 
         cases.append(
             {
@@ -369,11 +513,11 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
                 "commentCount": to_int(st.get("commentCount")),
                 "crimeYear": cl.get("crimeYear"),
                 "resolveYear": cl.get("resolveYear"),
-                "country": cl.get("country"),
+                "country": country,
                 "city": cl.get("city"),
                 "lat": lat,
                 "lon": lon,
-                "caseType": normalize_case_type(cl.get("caseType")),
+                "caseType": case_type,
                 "status": normalize_status(cl.get("status")),
                 "memberOnly": False,  # API does not directly expose this
                 "tags": cl.get("tags") or [],

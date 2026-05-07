@@ -15,6 +15,7 @@ export type CaseType =
   | "cult"          // 邪教
   | "fraud"         // 詐欺
   | "robbery"       // 搶劫/竊盜
+  | "escape"        // 越獄/逃亡
   | "disaster"      // 災難/事故
   | "mystery"       // 未解之謎
   | "kidnap"        // 綁架
@@ -82,6 +83,7 @@ export const CASE_TYPE_LABEL: Record<CaseType, string> = {
   cult: "邪教",
   fraud: "詐欺",
   robbery: "搶劫",
+  escape: "越獄/逃亡",
   disaster: "災難",
   mystery: "未解之謎",
   kidnap: "綁架",
@@ -96,6 +98,7 @@ export const CASE_TYPE_COLOR: Record<CaseType, string> = {
   cult: "#a855f7",
   fraud: "#f59e0b",
   robbery: "#84cc16",
+  escape: "#06b6d4",
   disaster: "#fb923c",
   mystery: "#60a5fa",
   kidnap: "#ec4899",

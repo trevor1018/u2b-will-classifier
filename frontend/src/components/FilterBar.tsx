@@ -13,7 +13,7 @@ export function FilterBar() {
   const cases = useStore((s) => s.cases);
   const caseTypes = useStore((s) => s.caseTypes);
   const statuses = useStore((s) => s.statuses);
-  const countries = useStore((s) => s.countries);
+  const country = useStore((s) => s.country);
   const yearRange = useStore((s) => s.yearRange);
   const searchText = useStore((s) => s.searchText);
   const toggleCaseType = useStore((s) => s.toggleCaseType);
@@ -51,7 +51,7 @@ export function FilterBar() {
   const hasActive =
     caseTypes.size > 0 ||
     statuses.size > 0 ||
-    countries.size > 0 ||
+    country !== null ||
     yearRange !== null ||
     searchText.trim() !== "";
 
@@ -143,11 +143,12 @@ export function FilterBar() {
         })}
       </div>
 
-      {/* Country chips (collapsed scroll if many) */}
+      {/* Country chips — single select; click again to clear; selecting also
+          zooms the map to that country. */}
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <span className="evidence-tag mr-1">COUNTRY</span>
         {stats.countries.map((c) => {
-          const active = countries.has(c);
+          const active = country === c;
           return (
             <button
               key={c}
