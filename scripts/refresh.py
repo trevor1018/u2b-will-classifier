@@ -201,6 +201,187 @@ def geocode_via_nominatim(
     return None
 
 
+WEB_SEARCH_SYSTEM = """你是案件地點研究員。給你一個案件名稱與影片標題，
+你會用 web_search 工具找出該案件的「具體發生地點」(city + 經緯度)。
+
+回傳 JSON 物件，只有 JSON、不要任何解釋文字。Schema：
+{
+  "city": str | null,     // 中文城市/區名 (如「洛杉磯」「釜山」「茨城縣築波市」)
+  "country": str | null,  // 中文國名
+  "lat": number | null,
+  "lon": number | null,
+  "confidence": str       // "high" | "medium" | "low"
+}
+
+規則：
+- 真的搜不到具體城市時，所有欄位都回 null（不要硬猜，不要用國家中心點）
+- 跨國案件用「實際案發地」，不用受害者國籍
+- lat/lon 必須是城市級精度（不是國家中心點）"""
+
+
+def lookup_via_web_search(
+    client,
+    title: str,
+    case_name: str,
+    hint_country: str | None,
+    max_retries: int = 3,
+) -> dict[str, Any] | None:
+    """One Claude call with web_search enabled. Returns parsed dict or None.
+
+    Web-search results inflate the input-token budget fast, so this call is
+    the place where the org rate limit (50k input tok/min on free tier) bites.
+    Catches 429 and backs off — caller still does an additional inter-call
+    sleep so we stay under the cap.
+    """
+    user_msg = (
+        f"案件名稱：{case_name}\n"
+        f"影片完整標題：{title}\n"
+        f"目前粗略判斷國家：{hint_country or '不明'}\n\n"
+        f"請搜尋並回傳該案件的具體地點 JSON。"
+    )
+    backoff = 30
+    for attempt in range(max_retries):
+        try:
+            msg = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=400,
+                tools=[
+                    {
+                        "type": "web_search_20250305",
+                        "name": "web_search",
+                        "max_uses": 2,  # smaller search budget = fewer input toks
+                    }
+                ],
+                system=WEB_SEARCH_SYSTEM,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            break
+        except Exception as e:
+            err_str = str(e)
+            if "rate_limit_error" in err_str or "429" in err_str:
+                print(
+                    f"  ! 429 rate limit — sleeping {backoff}s "
+                    f"(attempt {attempt + 1}/{max_retries})",
+                    file=sys.stderr,
+                )
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+            print(f"  ! web_search call failed: {e}", file=sys.stderr)
+            return None
+    else:
+        print("  ! gave up after retries", file=sys.stderr)
+        return None
+
+    # Concatenate all text blocks (web_search tool_use blocks are interleaved
+    # but we just want the final JSON answer the model emits)
+    text = "".join(
+        b.text for b in msg.content if hasattr(b, "text")
+    ).strip()
+
+    if not text:
+        return None
+    # Strip markdown fences if present
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.startswith("json"):
+            text = text[4:].strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Model added prose around the JSON — find the first {...} block
+        import re
+
+        match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError:
+                pass
+        print(f"  ! couldn't parse web_search response: {text[:200]!r}", file=sys.stderr)
+        return None
+
+
+def web_search_geo_lookup(
+    cache: dict[str, dict[str, Any]],
+    videos: list[dict[str, Any]],
+) -> int:
+    """For each cache entry that still lacks a specific city + lat/lon,
+    ask Claude with web_search enabled to find the case's real location.
+
+    Targets ~55 entries that LLM couldn't pin down from title+description
+    alone. Costs roughly 0.005-0.01 USD per case.
+    Returns number of entries successfully updated.
+    """
+    if not ANTHROPIC_API_KEY:
+        print("⚠ ANTHROPIC_API_KEY missing — skipping web_search lookup", file=sys.stderr)
+        return 0
+
+    todo: list[tuple[str, str, str]] = []  # (vid, title, case_name)
+    video_by_id = {v["id"]: v for v in videos}
+    for vid, cl in cache.items():
+        # Already has good geo → skip
+        if (
+            cl.get("lat") is not None
+            and cl.get("lon") is not None
+            and is_geocodable_city(cl.get("city"))
+        ):
+            continue
+        v = video_by_id.get(vid)
+        if not v:
+            continue
+        title = v.get("snippet", {}).get("title", "")
+        case_name = cl.get("caseName") or title
+        if not title:
+            continue
+        todo.append((vid, title, case_name))
+
+    if not todo:
+        print("Web search geo: nothing to look up.")
+        return 0
+
+    print(
+        f"Web search geo: {len(todo)} cases to look up via Claude+web_search "
+        f"(~{len(todo) * 16}s with rate-limit pacing)…"
+    )
+    from anthropic import Anthropic
+
+    client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    fixed = 0
+    save_every = 5
+    # Inter-call sleep — the free-tier limit is 50k input tok/min and each
+    # web_search call easily pulls 5-10k tokens of result content. 16s
+    # between calls keeps us safely under.
+    INTER_CALL_DELAY = 16
+
+    for idx, (vid, title, case_name) in enumerate(todo, 1):
+        hint = cache[vid].get("country")
+        result = lookup_via_web_search(client, title, case_name, hint)
+        if result and result.get("lat") is not None and result.get("lon") is not None:
+            cache[vid]["lat"] = result["lat"]
+            cache[vid]["lon"] = result["lon"]
+            if result.get("city"):
+                cache[vid]["city"] = result["city"]
+            if result.get("country"):
+                cache[vid]["country"] = result["country"]
+            fixed += 1
+            print(
+                f"  [{idx}/{len(todo)}] {case_name[:30]} -> "
+                f"{result.get('city')} ({result.get('lat'):.4f}, {result.get('lon'):.4f}) "
+                f"[{result.get('confidence', '?')}]"
+            )
+        else:
+            print(f"  [{idx}/{len(todo)}] {case_name[:30]} -> nothing found")
+        if idx % save_every == 0:
+            save_classification_cache(cache)
+        if idx < len(todo):
+            time.sleep(INTER_CALL_DELAY)
+
+    save_classification_cache(cache)
+    print(f"Web search geo: {fixed}/{len(todo)} pinned")
+    return fixed
+
+
 def geocode_missing_coords(cache: dict[str, dict[str, Any]]) -> int:
     """Fill in lat/lon for cache entries where the LLM gave a real city
     string but couldn't / didn't return coordinates. Free (Nominatim/OSM),
@@ -690,6 +871,13 @@ def main() -> int:
              "entries that have city but no lat/lon, then re-emit cases.json. "
              "Free; ~1s per missing entry.",
     )
+    p.add_argument(
+        "--web-search-geo",
+        action="store_true",
+        help="For cases the LLM couldn't pin down from title+description, "
+             "use Claude's web_search tool to find the real location. "
+             "Costs ~$0.01 per remaining case (~$0.40 total).",
+    )
     args = p.parse_args()
 
     if not YT_API_KEY:
@@ -716,6 +904,23 @@ def main() -> int:
     if args.limit > 0:
         videos = videos[: args.limit]
         print(f"  limited to first {len(videos)} videos")
+
+    # Standalone web-search lookup pass: for cases LLM couldn't pin down,
+    # let Claude search the web for the real location. Costs ~$0.40 / 55 cases.
+    if args.web_search_geo:
+        cache = load_classification_cache()
+        web_search_geo_lookup(cache, videos)
+        # Then fall through to write cases.json with the updated cache.
+        videos_for_payload = videos
+        classifications = {
+            v["id"]: cache[v["id"]] for v in videos_for_payload if v["id"] in cache
+        }
+        payload = build_payload(videos_for_payload, classifications)
+        OUTPUT.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"Wrote {len(payload['cases'])} cases -> {OUTPUT}")
+        return 0
 
     # Standalone geocoding pass: fix entries that already have a city but
     # no lat/lon. Free, just slow (1 req/sec to Nominatim).
