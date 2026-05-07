@@ -123,16 +123,24 @@ CLASSIFIER_SYSTEM = """你是 YouTube 影片元資料分析師，專門處理「
 給你一支影片的標題與描述，抽取結構化資訊並回傳 JSON。
 只回傳一個 JSON 物件，不要任何解釋文字。
 
+地理欄位特別重要：
+- 永遠優先給「具體到城市/縣/州」的地點，不要只給國家。
+- 標題中的地名（例：釜山、洛杉磯、福岡、北海道、巴黎、倫敦）就是答案，直接用。
+- 即使描述沒明說，根據案件名稱（例：「奧斯汀酸奶店案」→Austin TX、「光明市母子事件」
+  →光明市）、人名地名線索，盡量推斷最具體的城市。
+- lat/lon 必須給數字（你已知道主要城市座標）；只有真的無法判斷時才給 null。
+- 若是跨國案件（受害者一國、犯案地另一國），country/city 用「實際案發地」，不用受害者國籍。
+
 Schema:
 {
   "caseName": str,           // 從標題抽出的案件正式名稱（去掉【標籤】、戲劇化 hook）
   "country": str | null,     // 中文國名，如「日本」「美國」「韓國」「英國」「不明」
-  "city": str | null,        // 中文城市/地區名
-  "lat": number | null,      // 緯度 (best estimate)
-  "lon": number | null,      // 經度
+  "city": str | null,        // 具體中文城市/地區名（不要回「不明」，盡量給）
+  "lat": number | null,      // 城市級緯度（不要給國家中心點）
+  "lon": number | null,      // 城市級經度
   "crimeYear": int | null,   // 案件實際發生年份
   "resolveYear": int | null, // 結案/判決年份（若已破案）
-  "caseType": str,           // murder|missing|serial|cult|fraud|disaster|mystery|kidnap|curio|other
+  "caseType": str,           // murder|missing|serial|cult|fraud|robbery|escape|disaster|mystery|kidnap|curio|other
   "status": str,             // solved|cold|partial|exonerated|ongoing|unknown
   "tags": [str]              // 標題【】內的標籤
 }
@@ -221,7 +229,9 @@ def classify_with_anthropic(
         vid = video["id"]
         sn = video.get("snippet", {})
         title = sn.get("title", "")
-        desc = (sn.get("description", "") or "")[:600]
+        # Bumped from 600 → 2000: longer descriptions sometimes carry the
+        # specific city / year that title alone doesn't reveal.
+        desc = (sn.get("description", "") or "")[:2000]
 
         try:
             msg = client.messages.create(
@@ -567,6 +577,13 @@ def main() -> int:
         help="Force re-classification of all videos (ignore classification cache). "
              "Use after changing the schema/prompt.",
     )
+    p.add_argument(
+        "--refine-geo",
+        action="store_true",
+        help="Re-classify only cases whose cache entry lacks a specific city "
+             "or LLM-given lat/lon. Cheap (~$0.12 for ~110 cases) but greatly "
+             "reduces country-centroid stacking on the map.",
+    )
     args = p.parse_args()
 
     if not YT_API_KEY:
@@ -595,6 +612,21 @@ def main() -> int:
         print(f"  limited to first {len(videos)} videos")
 
     classifications: dict[str, dict[str, Any]] = {}
+    if args.refine_geo and not args.skip_classify:
+        # Evict cache entries that lack a specific city + LLM lat/lon so the
+        # next pass through classify_with_anthropic re-runs only those.
+        cache = load_classification_cache()
+        before = len(cache)
+        evicted = 0
+        for vid, cl in list(cache.items()):
+            city_ok = bool(cl.get("city")) and cl.get("city") not in ("不明", "未知", "未明")
+            coord_ok = cl.get("lat") is not None and cl.get("lon") is not None
+            if not (city_ok and coord_ok):
+                del cache[vid]
+                evicted += 1
+        save_classification_cache(cache)
+        print(f"--refine-geo: evicted {evicted}/{before} cache entries lacking specific geo")
+
     if not args.skip_classify:
         classifications = classify_with_anthropic(videos, force=args.reclassify)
 
