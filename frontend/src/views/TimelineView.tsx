@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { DataSet } from "vis-timeline/standalone";
-import { Timeline } from "vis-timeline/standalone";
+import { DataSet, Timeline } from "vis-timeline/standalone";
 import { useFilteredCases, useStore } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL } from "../lib/types";
 
@@ -19,18 +18,21 @@ export function TimelineView() {
   const focus = useStore((s) => s.focusCase);
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<Timeline | null>(null);
+  // Hold a stable ref to the items DataSet so we don't have to fish it back
+  // out of vis-timeline's (private-ish) `itemsData` getter — that breaks under
+  // some minified prod builds.
+  const itemsDSRef = useRef<DataSet<TimelineItem> | null>(null);
   const focusRef = useRef(focus);
   focusRef.current = focus;
 
-  const { items, groups } = useMemo(() => {
-    const items: TimelineItem[] = [];
+  const items = useMemo<TimelineItem[]>(() => {
+    const out: TimelineItem[] = [];
     cases.forEach((c) => {
       const color = CASE_TYPE_COLOR[c.caseType];
       const startYear = c.crimeYear;
       const endYear = c.resolveYear ?? c.crimeYear;
-      // Track 1: case lifespan (crime → resolve)
       if (startYear) {
-        items.push({
+        out.push({
           id: `${c.id}-case`,
           group: 1,
           start: `${startYear}-01-01`,
@@ -42,8 +44,7 @@ export function TimelineView() {
           style: `background-color: ${color}33; border-color: ${color}; color: #f3f4f6;`,
         });
       }
-      // Track 2: video publish
-      items.push({
+      out.push({
         id: `${c.id}-pub`,
         group: 2,
         start: c.publishedAt,
@@ -52,24 +53,23 @@ export function TimelineView() {
         style: `background-color: ${color}55; border-color: ${color}; color: #f3f4f6;`,
       });
     });
-    const groups = [
-      { id: 1, content: "案件壽命", style: "color: #a3e635; font-weight: 600;" },
-      { id: 2, content: "影片發布", style: "color: #60a5fa; font-weight: 600;" },
-    ];
-    return { items, groups };
+    return out;
   }, [cases]);
 
   // Init once
   useEffect(() => {
     if (!containerRef.current) return;
     const itemsDS = new DataSet<TimelineItem>([]);
-    const groupsDS = new DataSet(groups);
+    const groupsDS = new DataSet([
+      { id: 1, content: "案件壽命", style: "color: #a3e635; font-weight: 600;" },
+      { id: 2, content: "影片發布", style: "color: #60a5fa; font-weight: 600;" },
+    ]);
     const tl = new Timeline(containerRef.current, itemsDS, groupsDS, {
       stack: true,
       stackSubgroups: false,
       orientation: { axis: "top", item: "top" },
-      zoomMin: 1000 * 60 * 60 * 24 * 30, // 30 days
-      zoomMax: 1000 * 60 * 60 * 24 * 365 * 200, // 200 years
+      zoomMin: 1000 * 60 * 60 * 24 * 30,
+      zoomMax: 1000 * 60 * 60 * 24 * 365 * 200,
       margin: { item: 4, axis: 6 },
       tooltip: { followMouse: true },
     });
@@ -79,20 +79,19 @@ export function TimelineView() {
       focusRef.current(id);
     });
     timelineRef.current = tl;
+    itemsDSRef.current = itemsDS;
     return () => {
       tl.destroy();
       timelineRef.current = null;
+      itemsDSRef.current = null;
     };
-    // groups is stable (constructed inside useMemo body) — only re-init on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update items when filtered cases change
   useEffect(() => {
+    const ds = itemsDSRef.current;
     const tl = timelineRef.current;
-    if (!tl) return;
-    // @ts-expect-error vis-timeline does expose itemsData
-    const ds = tl.itemsData as DataSet<TimelineItem>;
+    if (!ds || !tl) return;
     ds.clear();
     ds.add(items);
     if (items.length > 0) tl.fit({ animation: false });
