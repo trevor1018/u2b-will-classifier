@@ -32,6 +32,29 @@
   border-color: #1f2937 !important;
 }
 
+/* Hover tooltip — dark to match the dashboard. Default white was illegible
+   with our light-on-dark inline text. */
+.leaflet-tooltip {
+  background: #111827 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #1f2937 !important;
+  border-radius: 6px;
+  padding: 6px 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+}
+.leaflet-tooltip-top::before {
+  border-top-color: #111827 !important;
+}
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: #111827 !important;
+}
+.leaflet-tooltip-left::before {
+  border-left-color: #111827 !important;
+}
+.leaflet-tooltip-right::before {
+  border-right-color: #111827 !important;
+}
+
 /* vis-timeline 暗黑主題 */
 .vis-timeline {
   border: none !important;
