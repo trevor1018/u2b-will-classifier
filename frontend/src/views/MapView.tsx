@@ -36,7 +36,10 @@ export function MapView() {
       zoom: 2,
       minZoom: 2,
       worldCopyJump: false,
-      maxBounds: L.latLngBounds([-85, -180], [85, 180]),
+      // Allow ~30° of pan past the antimeridian on each side so NZ /
+      // Russia far-east markers can be centred without falling into
+      // blank space at the edge.
+      maxBounds: L.latLngBounds([-85, -210], [85, 210]),
       maxBoundsViscosity: 1.0,
       preferCanvas: true,
       zoomControl: true,
@@ -47,8 +50,9 @@ export function MapView() {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
-        noWrap: true,
-        bounds: L.latLngBounds([-85, -180], [85, 180]),
+        // No noWrap: tiles continue across the antimeridian so countries
+        // near 180° (紐西蘭, 俄羅斯遠東, 阿留申) don't render against
+        // empty space.
       },
     ).addTo(map);
     const layer = L.layerGroup().addTo(map);
