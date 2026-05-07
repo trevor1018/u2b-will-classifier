@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 import type { CaseRecord, CaseStatus, CaseType, CasesPayload } from "./types";
 
 interface FilterState {
@@ -98,7 +99,11 @@ export function applyFilters(state: FilterState): CaseRecord[] {
   });
 }
 
-/** Hook returning filtered cases, recomputed on any relevant state change. */
+/** Hook returning filtered cases. Uses shallow equality so consumers get a
+ *  STABLE array reference when filter state hasn't actually changed — without
+ *  this, every store update produces a fresh array via filter() and the
+ *  components downstream (especially react-leaflet) loop infinitely on
+ *  "props changed". */
 export function useFilteredCases(): CaseRecord[] {
-  return useStore((s) => applyFilters(s));
+  return useStore(useShallow(applyFilters));
 }
