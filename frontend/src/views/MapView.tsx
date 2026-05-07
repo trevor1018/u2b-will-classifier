@@ -1,23 +1,24 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import "leaflet.markercluster";
 import { Globe2 } from "lucide-react";
 import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
 import { COUNTRY_GEO } from "../lib/countryGeo";
 
 // One imperative Leaflet map handles 400+ markers far cheaper than 400+
-// React `<CircleMarker>` instances — and avoids the per-marker prop-churn
-// re-render loop that crashed earlier.
+// React `<CircleMarker>` instances. We further use leaflet.markercluster
+// so dense regions (日本 has 115 cases) collapse into count badges instead
+// of overlapping dots — and crucially its `addLayers([])` is a real bulk
+// API, far faster than calling `marker.addTo(layer)` 405 times.
 //
 // Behaviour:
-//  - Initial view = entire world, single copy
-//  - minZoom + maxBounds prevent zooming out far enough to see world repeat
-//  - Selecting a country flies the map to that country's *geographic* centre
-//    (from a static dict, not the case data points — cross-border cases &
-//    sparse data made the bounds approach misleading)
+//  - Initial view = entire world, single copy. minZoom + maxBounds prevent
+//    zooming out to where the world repeats.
+//  - Selecting a country flies to its *geographic* centre (static dict).
 //  - Click marker → opens the right-hand CaseDetailDrawer (with YT embed).
-//    Hover for a quick tooltip; no Leaflet popup that could be clipped by
-//    panel overflow on small viewports.
+//  - Hover any marker for a quick dark tooltip.
+//  - Top-right Globe button resets the view without clearing filters.
 export function MapView() {
   const cases = useFilteredCases();
   const country = useStore((s) => s.country);
@@ -27,7 +28,11 @@ export function MapView() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markerLayerRef = useRef<L.LayerGroup | null>(null);
+  // markerClusterGroup is typed as L.MarkerClusterGroup but the plugin
+  // augments L globally and TS doesn't see the type without extra config.
+  // Refining via `any` here keeps the rest of the file strict-typed.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clusterRef = useRef<any>(null);
 
   // Init once
   useEffect(() => {
@@ -37,9 +42,6 @@ export function MapView() {
       zoom: 2,
       minZoom: 2,
       worldCopyJump: false,
-      // Allow ~30° of pan past the antimeridian on each side so NZ /
-      // Russia far-east markers can be centred without falling into
-      // blank space at the edge.
       maxBounds: L.latLngBounds([-85, -210], [85, 210]),
       maxBoundsViscosity: 1.0,
       preferCanvas: true,
@@ -51,50 +53,78 @@ export function MapView() {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
-        // No noWrap: tiles continue across the antimeridian so countries
-        // near 180° (紐西蘭, 俄羅斯遠東, 阿留申) don't render against
-        // empty space.
       },
     ).addTo(map);
-    const layer = L.layerGroup().addTo(map);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cluster = (L as any).markerClusterGroup({
+      // Keep clusters tight enough that you can still see individual markers
+      // at country-level zooms.
+      maxClusterRadius: 40,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      chunkedLoading: true, // lets the lib break the add operation across frames
+      iconCreateFunction: (cluster: { getChildCount: () => number }) => {
+        const n = cluster.getChildCount();
+        // size scales with count
+        const size = n < 10 ? 30 : n < 50 ? 36 : n < 200 ? 44 : 52;
+        return L.divIcon({
+          html: `<div class="u2b-cluster"><span>${n}</span></div>`,
+          className: "u2b-cluster-wrap",
+          iconSize: L.point(size, size),
+        });
+      },
+    });
+    cluster.addTo(map);
+
     mapRef.current = map;
-    markerLayerRef.current = layer;
+    clusterRef.current = cluster;
+
     setTimeout(() => map.invalidateSize(), 100);
     return () => {
       map.remove();
       mapRef.current = null;
-      markerLayerRef.current = null;
+      clusterRef.current = null;
     };
   }, []);
 
   // Repaint markers whenever filtered cases change
   useEffect(() => {
-    const layer = markerLayerRef.current;
-    if (!layer) return;
-    layer.clearLayers();
-    cases.forEach((c) => {
-      if (c.lat == null || c.lon == null) return;
+    const cluster = clusterRef.current;
+    if (!cluster) return;
+
+    // Build all markers up-front so we can use the bulk-add API.
+    const markers: L.CircleMarker[] = [];
+    for (const c of cases) {
+      if (c.lat == null || c.lon == null) continue;
       const color = CASE_TYPE_COLOR[c.caseType];
       const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
-      const marker = L.circleMarker([c.lat, c.lon], {
+      const m = L.circleMarker([c.lat, c.lon], {
         radius,
         color,
         fillColor: color,
         fillOpacity: 0.6,
         weight: 1,
-      }).bindTooltip(
-        // Lightweight hover preview. Stays inside the map pane and doesn't
-        // open on click (so no fight with the drawer).
-        `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
-            ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
-          </div>
-          <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
-          <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
+      });
+      // Lazy tooltip: HTML only built on hover, not for every marker on add.
+      m.bindTooltip(
+        () =>
+          `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
+              ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
+            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
         { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
       );
-      marker.on("click", () => focusRef.current(c.id));
-      marker.addTo(layer);
-    });
+      m.on("click", () => focusRef.current(c.id));
+      markers.push(m);
+    }
+
+    // Bulk replace — this is the entire reason we use markerClusterGroup
+    // over a plain L.layerGroup. addLayers/removeLayers are batched and
+    // chunked across animation frames internally.
+    cluster.clearLayers();
+    cluster.addLayers(markers);
   }, [cases]);
 
   // Fly to the selected country's *geographic* centre (or back to the world)
@@ -106,19 +136,12 @@ export function MapView() {
       map.flyTo([20, 0], 2, { duration: 0.6 });
       return;
     }
-
     const geo = COUNTRY_GEO[country];
     if (geo) {
       map.flyTo([geo.lat, geo.lon], geo.zoom, { duration: 0.8 });
-      return;
     }
-
-    // Country not in our static dict (e.g. "不明") → don't move the map
   }, [country]);
 
-  // Reset to the default world view *without* touching filter state — useful
-  // after the user has flown into a country but wants the wide view back
-  // while keeping their case-type / status / country selections.
   const resetView = () => {
     mapRef.current?.flyTo([20, 0], 2, { duration: 0.6 });
   };
