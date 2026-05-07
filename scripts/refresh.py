@@ -29,6 +29,15 @@ from typing import Any, Iterable
 import httpx
 from dotenv import load_dotenv
 
+# Windows cmd / PowerShell often defaults to cp950 which can't encode emoji.
+# Force UTF-8 so we never crash on print statements.
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parent.parent
 ENV_PATH = ROOT / ".env"
 load_dotenv(ENV_PATH)
@@ -40,6 +49,9 @@ ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 OUTPUT = ROOT / "frontend" / "public" / "data" / "cases.json"
 RAW_CACHE = ROOT / "scripts" / ".cache" / "raw_videos.json"
+# Persistent classification cache keyed by video id. Only videos not in cache
+# hit the LLM, so weekly incremental refreshes cost ~$0.0005 instead of $0.05.
+CLASSIFICATION_CACHE = ROOT / "scripts" / ".cache" / "classifications.json"
 
 
 # --------------------------------------------------------------------------
@@ -127,19 +139,59 @@ Schema:
 """
 
 
-def classify_with_anthropic(items: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Returns {video_id: classified_dict}."""
+def load_classification_cache() -> dict[str, dict[str, Any]]:
+    if CLASSIFICATION_CACHE.exists():
+        return json.loads(CLASSIFICATION_CACHE.read_text(encoding="utf-8"))
+    return {}
+
+
+def save_classification_cache(cache: dict[str, dict[str, Any]]) -> None:
+    CLASSIFICATION_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CLASSIFICATION_CACHE.write_text(
+        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def classify_with_anthropic(
+    items: list[dict[str, Any]], force: bool = False
+) -> dict[str, dict[str, Any]]:
+    """Returns {video_id: classified_dict}.
+
+    Persistent cache keyed by video id. Only cache misses hit the LLM, so
+    weekly incremental refreshes cost ~$0.0005 instead of $0.05 (full batch).
+    Pass force=True to re-classify everything (e.g. after schema change).
+    """
+    cache = {} if force else load_classification_cache()
+    todo = [v for v in items if v["id"] not in cache]
+    cached_n = len(items) - len(todo)
+    print(
+        f"Classification: {cached_n} cached, {len(todo)} need LLM "
+        f"({'force' if force else 'incremental'} mode)"
+    )
+
+    if not todo:
+        return {v["id"]: cache[v["id"]] for v in items if v["id"] in cache}
+
     if not ANTHROPIC_API_KEY:
-        print("⚠ ANTHROPIC_API_KEY missing — skipping classification", file=sys.stderr)
-        return {}
+        print("⚠ ANTHROPIC_API_KEY missing — skipping classification of new videos", file=sys.stderr)
+        return {v["id"]: cache[v["id"]] for v in items if v["id"] in cache}
 
     from anthropic import Anthropic
 
     client = Anthropic(api_key=ANTHROPIC_API_KEY)
-    results: dict[str, dict[str, Any]] = {}
-    print(f"Classifying {len(items)} videos via {ANTHROPIC_MODEL}…")
+    print(f"Classifying {len(todo)} new videos via {ANTHROPIC_MODEL}…")
 
-    for idx, video in enumerate(items, 1):
+    # Errors that mean "no point retrying — bail out, save progress, ask user"
+    fatal_substrings = (
+        "credit_balance_too_low",
+        "insufficient_quota",
+        "invalid_api_key",
+        "authentication_error",
+        "permission_error",
+    )
+
+    save_every = 10  # checkpoint cache periodically so a crash doesn't lose progress
+    for idx, video in enumerate(todo, 1):
         vid = video["id"]
         sn = video.get("snippet", {})
         title = sn.get("title", "")
@@ -163,14 +215,29 @@ def classify_with_anthropic(items: list[dict[str, Any]]) -> dict[str, dict[str, 
                 if text.startswith("json"):
                     text = text[4:].strip()
             parsed = json.loads(text)
-            results[vid] = parsed
-            if idx % 5 == 0 or idx == len(items):
-                print(f"  [{idx}/{len(items)}] {title[:50]}…")
+            cache[vid] = parsed
+            if idx % 5 == 0 or idx == len(todo):
+                print(f"  [{idx}/{len(todo)}] {title[:50]}…")
+            if idx % save_every == 0:
+                save_classification_cache(cache)
         except Exception as e:
-            print(f"  ! failed for {vid}: {e}", file=sys.stderr)
+            err = str(e)
+            if any(s in err for s in fatal_substrings):
+                print(
+                    f"\n!! Fatal API error after {idx-1}/{len(todo)} successful "
+                    f"({len(cache)} total in cache):\n   {err}\n"
+                    f"   Saving cache and bailing out. Top up and re-run to "
+                    f"continue from where we left off.",
+                    file=sys.stderr,
+                )
+                save_classification_cache(cache)
+                return {v["id"]: cache[v["id"]] for v in items if v["id"] in cache}
+            print(f"  ! failed for {vid}: {err}", file=sys.stderr)
             continue
 
-    return results
+    save_classification_cache(cache)
+    print(f"  cache now holds {len(cache)} classifications")
+    return {v["id"]: cache[v["id"]] for v in items if v["id"] in cache}
 
 
 # --------------------------------------------------------------------------
@@ -193,6 +260,48 @@ def to_int(s: Any) -> int:
         return int(s)
     except (TypeError, ValueError):
         return 0
+
+
+# Frontend's known case types — anything outside this is normalised below.
+KNOWN_CASE_TYPES = {
+    "murder", "missing", "serial", "cult", "fraud", "robbery",
+    "disaster", "mystery", "kidnap", "curio", "other",
+}
+# Maps LLM-invented synonyms onto our supported set.
+CASE_TYPE_ALIASES = {
+    "theft": "robbery",
+    "rescue": "disaster",
+    "attack": "murder",
+    "child_abuse": "other",
+    "poison": "murder",
+    "escape": "curio",
+    "stalking": "other",
+    "arson": "other",
+    "extortion": "fraud",
+    "abduction": "kidnap",
+    "assault": "murder",
+    "homicide": "murder",
+    "scam": "fraud",
+}
+KNOWN_STATUSES = {"solved", "cold", "partial", "exonerated", "ongoing", "unknown"}
+
+
+def normalize_case_type(t: str | None) -> str:
+    if not t:
+        return "other"
+    t = t.lower().strip()
+    if t in KNOWN_CASE_TYPES:
+        return t
+    if t in CASE_TYPE_ALIASES:
+        return CASE_TYPE_ALIASES[t]
+    return "other"
+
+
+def normalize_status(s: str | None) -> str:
+    if not s:
+        return "unknown"
+    s = s.lower().strip()
+    return s if s in KNOWN_STATUSES else "unknown"
 
 
 def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -238,8 +347,8 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
                 "city": cl.get("city"),
                 "lat": lat,
                 "lon": lon,
-                "caseType": cl.get("caseType") or "other",
-                "status": cl.get("status") or "unknown",
+                "caseType": normalize_case_type(cl.get("caseType")),
+                "status": normalize_status(cl.get("status")),
                 "memberOnly": False,  # API does not directly expose this
                 "tags": cl.get("tags") or [],
                 "milestones": [],
@@ -282,6 +391,12 @@ def main() -> int:
     p.add_argument("--limit", type=int, default=0, help="Process only first N videos")
     p.add_argument("--skip-classify", action="store_true", help="Skip LLM classification")
     p.add_argument("--no-cache", action="store_true", help="Re-fetch even if raw cache exists")
+    p.add_argument(
+        "--reclassify",
+        action="store_true",
+        help="Force re-classification of all videos (ignore classification cache). "
+             "Use after changing the schema/prompt.",
+    )
     args = p.parse_args()
 
     if not YT_API_KEY:
@@ -311,7 +426,7 @@ def main() -> int:
 
     classifications: dict[str, dict[str, Any]] = {}
     if not args.skip_classify:
-        classifications = classify_with_anthropic(videos)
+        classifications = classify_with_anthropic(videos, force=args.reclassify)
 
     payload = build_payload(videos, classifications)
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

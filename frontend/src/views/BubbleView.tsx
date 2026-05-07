@@ -9,7 +9,7 @@ export function BubbleView() {
 
   const seriesData = useMemo(() => {
     const grouped: Record<CaseType, Array<[number, number, number, string, string]>> = {
-      murder: [], missing: [], serial: [], cult: [], fraud: [],
+      murder: [], missing: [], serial: [], cult: [], fraud: [], robbery: [],
       disaster: [], mystery: [], kidnap: [], curio: [], other: [],
     };
     for (const c of cases) {
