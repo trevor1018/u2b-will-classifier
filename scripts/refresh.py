@@ -22,6 +22,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -145,6 +146,104 @@ Schema:
   "tags": [str]              // 標題【】內的標籤
 }
 """
+
+
+UNKNOWN_CITY = {
+    "不明", "未知", "未明", "?", "未提及", "未明確指出", "未明確",
+    "未說明", "未指明", "未特別說明",
+}
+# Strings that look like city names but really aren't a single point
+# (oceans, polar regions, generic descriptors). Geocoding them produces
+# random nonsense — e.g. Nominatim mapped "大西洋" to Osaka.
+NON_CITY_KEYWORDS = (
+    "大西洋", "太平洋", "印度洋", "北冰洋", "南冰洋",
+    "北極", "南極", "海上", "公海", "海面", "深海",
+    "山區", "沙漠", "森林", "鄉間", "郊外",
+)
+
+
+def is_geocodable_city(city: str | None) -> bool:
+    if not city:
+        return False
+    if city in UNKNOWN_CITY:
+        return False
+    if any(kw in city for kw in NON_CITY_KEYWORDS):
+        return False
+    return True
+
+
+def geocode_via_nominatim(
+    client: httpx.Client, city: str, country: str | None
+) -> tuple[float, float] | None:
+    """Single Nominatim lookup. Returns (lat, lon) or None."""
+    q = f"{city}, {country}" if country and country not in UNKNOWN_CITY else city
+    try:
+        r = client.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "q": q,
+                "format": "json",
+                "limit": 1,
+                "accept-language": "zh-TW,zh,en",
+            },
+            headers={
+                # Nominatim requires a UA identifying the app (see usage policy).
+                "User-Agent": "u2b-will-classifier/0.1 (github.com/trevor1018/u2b-will-classifier)",
+            },
+            timeout=20,
+        )
+        r.raise_for_status()
+        data = r.json()
+        if data:
+            return float(data[0]["lat"]), float(data[0]["lon"])
+    except Exception as e:
+        print(f"  ! geocode failed for {q!r}: {e}", file=sys.stderr)
+    return None
+
+
+def geocode_missing_coords(cache: dict[str, dict[str, Any]]) -> int:
+    """Fill in lat/lon for cache entries where the LLM gave a real city
+    string but couldn't / didn't return coordinates. Free (Nominatim/OSM),
+    rate-limited at 1 req/sec per their usage policy.
+    Returns number of entries newly fixed.
+    """
+    todo: list[tuple[str, str, str | None]] = []
+    for vid, cl in cache.items():
+        if cl.get("lat") is not None and cl.get("lon") is not None:
+            continue
+        city = cl.get("city")
+        if not is_geocodable_city(city):
+            continue
+        todo.append((vid, city, cl.get("country")))
+
+    if not todo:
+        print("Geocode: nothing to do.")
+        return 0
+
+    print(f"Geocode: {len(todo)} entries need lat/lon — Nominatim @ 1 req/sec…")
+    fixed = 0
+    save_every = 5
+    with httpx.Client() as client:
+        for idx, (vid, city, country) in enumerate(todo, 1):
+            coords = geocode_via_nominatim(client, city, country)
+            if coords:
+                cache[vid]["lat"] = coords[0]
+                cache[vid]["lon"] = coords[1]
+                fixed += 1
+                print(
+                    f"  [{idx}/{len(todo)}] {city}, {country} -> "
+                    f"({coords[0]:.4f}, {coords[1]:.4f})"
+                )
+            else:
+                print(f"  [{idx}/{len(todo)}] {city}, {country} -> no result")
+            if idx % save_every == 0:
+                save_classification_cache(cache)
+            if idx < len(todo):
+                time.sleep(1.1)  # be polite — slightly over 1 req/sec
+
+    save_classification_cache(cache)
+    print(f"Geocode: {fixed}/{len(todo)} successfully placed")
+    return fixed
 
 
 def load_classification_cache() -> dict[str, dict[str, Any]]:
@@ -584,6 +683,13 @@ def main() -> int:
              "or LLM-given lat/lon. Cheap (~$0.12 for ~110 cases) but greatly "
              "reduces country-centroid stacking on the map.",
     )
+    p.add_argument(
+        "--geocode-only",
+        action="store_true",
+        help="Skip YouTube/LLM. Just run Nominatim geocoding for cache "
+             "entries that have city but no lat/lon, then re-emit cases.json. "
+             "Free; ~1s per missing entry.",
+    )
     args = p.parse_args()
 
     if not YT_API_KEY:
@@ -611,6 +717,23 @@ def main() -> int:
         videos = videos[: args.limit]
         print(f"  limited to first {len(videos)} videos")
 
+    # Standalone geocoding pass: fix entries that already have a city but
+    # no lat/lon. Free, just slow (1 req/sec to Nominatim).
+    if args.geocode_only:
+        cache = load_classification_cache()
+        geocode_missing_coords(cache)
+        # Build payload using only cached classifications (no YouTube fetch)
+        videos_for_payload = videos if RAW_CACHE.exists() else []
+        classifications = {
+            v["id"]: cache[v["id"]] for v in videos_for_payload if v["id"] in cache
+        }
+        payload = build_payload(videos_for_payload, classifications)
+        OUTPUT.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"Wrote {len(payload['cases'])} cases -> {OUTPUT}")
+        return 0
+
     classifications: dict[str, dict[str, Any]] = {}
     if args.refine_geo and not args.skip_classify:
         # Evict cache entries that lack a specific city + LLM lat/lon so the
@@ -627,8 +750,22 @@ def main() -> int:
         save_classification_cache(cache)
         print(f"--refine-geo: evicted {evicted}/{before} cache entries lacking specific geo")
 
-    if not args.skip_classify:
+    if args.skip_classify:
+        # Use whatever the cache already has; no LLM calls.
+        cache_now = load_classification_cache()
+        classifications = {
+            v["id"]: cache_now[v["id"]] for v in videos if v["id"] in cache_now
+        }
+        print(f"--skip-classify: using {len(classifications)} cached classifications")
+    else:
         classifications = classify_with_anthropic(videos, force=args.reclassify)
+        # After LLM classification, fill in any city-only entries via
+        # Nominatim (free OSM geocoder, rate-limited at 1 req/sec).
+        cache_now = load_classification_cache()
+        if geocode_missing_coords(cache_now) > 0:
+            classifications = {
+                v["id"]: cache_now[v["id"]] for v in videos if v["id"] in cache_now
+            }
 
     payload = build_payload(videos, classifications)
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
