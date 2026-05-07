@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import { Globe2 } from "lucide-react";
 import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
 import { COUNTRY_GEO } from "../lib/countryGeo";
@@ -115,7 +116,26 @@ export function MapView() {
     // Country not in our static dict (e.g. "不明") → don't move the map
   }, [country]);
 
-  return <div ref={containerRef} className="h-[480px]" />;
+  // Reset to the default world view *without* touching filter state — useful
+  // after the user has flown into a country but wants the wide view back
+  // while keeping their case-type / status / country selections.
+  const resetView = () => {
+    mapRef.current?.flyTo([20, 0], 2, { duration: 0.6 });
+  };
+
+  return (
+    <div className="relative">
+      <div ref={containerRef} className="h-[480px]" />
+      <button
+        type="button"
+        onClick={resetView}
+        title="返回世界視野（保留篩選）"
+        className="absolute right-3 top-3 z-[500] flex h-9 w-9 items-center justify-center rounded-md border border-ink-700 bg-ink-900/90 text-gray-300 shadow-lg backdrop-blur transition hover:border-accent-neon hover:text-accent-neon"
+      >
+        <Globe2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
 }
 
 function escapeHtml(s: string): string {
