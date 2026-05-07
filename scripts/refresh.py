@@ -140,8 +140,34 @@ Schema:
 
 
 def load_classification_cache() -> dict[str, dict[str, Any]]:
+    """Two-tier cache:
+       1. scripts/.cache/classifications.json — local dev fast path (gitignored)
+       2. frontend/public/data/cases.json     — committed, lets CI runners hit
+          cache too without needing the .cache/ dir checked in
+    """
     if CLASSIFICATION_CACHE.exists():
         return json.loads(CLASSIFICATION_CACHE.read_text(encoding="utf-8"))
+
+    if OUTPUT.exists():
+        # Reconstruct {vid: classified_fields} from previously committed cases.json
+        prev = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        derived: dict[str, dict[str, Any]] = {}
+        classified_fields = (
+            "caseName", "country", "city", "lat", "lon",
+            "crimeYear", "resolveYear", "caseType", "status", "tags",
+        )
+        for c in prev.get("cases", []):
+            vid = c.get("id")
+            if not vid:
+                continue
+            # Skip "uncached" rows (default-only fields suggest never classified)
+            if c.get("caseType") in (None, "other") and c.get("country") is None:
+                continue
+            derived[vid] = {k: c.get(k) for k in classified_fields}
+        if derived:
+            print(f"  (derived {len(derived)} cache entries from committed cases.json)")
+        return derived
+
     return {}
 
 
