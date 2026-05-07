@@ -6,19 +6,17 @@ import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
 import { COUNTRY_GEO } from "../lib/countryGeo";
 
-// One imperative Leaflet map handles 400+ markers far cheaper than 400+
-// React `<CircleMarker>` instances. We further use leaflet.markercluster
-// so dense regions (日本 has 115 cases) collapse into count badges instead
-// of overlapping dots — and crucially its `addLayers([])` is a real bulk
-// API, far faster than calling `marker.addTo(layer)` 405 times.
+// Strategy stack (top = applied first):
 //
-// Behaviour:
-//  - Initial view = entire world, single copy. minZoom + maxBounds prevent
-//    zooming out to where the world repeats.
-//  - Selecting a country flies to its *geographic* centre (static dict).
-//  - Click marker → opens the right-hand CaseDetailDrawer (with YT embed).
-//  - Hover any marker for a quick dark tooltip.
-//  - Top-right Globe button resets the view without clearing filters.
+//  1. Imperative Leaflet, not 400+ react-leaflet components
+//  2. markerClusterGroup with chunkedLoading + bulk addLayers / removeLayers
+//  3. *Diff & patch*: keep a Map<id, marker>; on filter change we only
+//     create/destroy the delta. 日本(115) → all(454) becomes "add 339"
+//     instead of "destroy 115 + create 454 from scratch".
+//  4. Lazy tooltip — HTML is built only when the user actually hovers
+//  5. Defer the patch to next animation frame so the click → store
+//     update → render path returns immediately (UI feels snappy even
+//     while clustering recomputes)
 export function MapView() {
   const cases = useFilteredCases();
   const country = useStore((s) => s.country);
@@ -28,11 +26,10 @@ export function MapView() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  // markerClusterGroup is typed as L.MarkerClusterGroup but the plugin
-  // augments L globally and TS doesn't see the type without extra config.
-  // Refining via `any` here keeps the rest of the file strict-typed.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clusterRef = useRef<any>(null);
+  // Persistent {video id → marker} so we can patch instead of rebuild.
+  const markerMapRef = useRef<Map<string, L.CircleMarker>>(new Map());
 
   // Init once
   useEffect(() => {
@@ -58,15 +55,13 @@ export function MapView() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cluster = (L as any).markerClusterGroup({
-      // Keep clusters tight enough that you can still see individual markers
-      // at country-level zooms.
       maxClusterRadius: 40,
       showCoverageOnHover: false,
       spiderfyOnMaxZoom: true,
-      chunkedLoading: true, // lets the lib break the add operation across frames
+      chunkedLoading: true,
+      removeOutsideVisibleBounds: true,
       iconCreateFunction: (cluster: { getChildCount: () => number }) => {
         const n = cluster.getChildCount();
-        // size scales with count
         const size = n < 10 ? 30 : n < 50 ? 36 : n < 200 ? 44 : 52;
         return L.divIcon({
           html: `<div class="u2b-cluster"><span>${n}</span></div>`,
@@ -85,46 +80,64 @@ export function MapView() {
       map.remove();
       mapRef.current = null;
       clusterRef.current = null;
+      markerMapRef.current.clear();
     };
   }, []);
 
-  // Repaint markers whenever filtered cases change
+  // Patch markers when filtered cases change. Defer to next animation frame
+  // so the click that triggered this doesn't have to wait for clustering.
   useEffect(() => {
     const cluster = clusterRef.current;
     if (!cluster) return;
 
-    // Build all markers up-front so we can use the bulk-add API.
-    const markers: L.CircleMarker[] = [];
-    for (const c of cases) {
-      if (c.lat == null || c.lon == null) continue;
-      const color = CASE_TYPE_COLOR[c.caseType];
-      const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
-      const m = L.circleMarker([c.lat, c.lon], {
-        radius,
-        color,
-        fillColor: color,
-        fillOpacity: 0.6,
-        weight: 1,
-      });
-      // Lazy tooltip: HTML only built on hover, not for every marker on add.
-      m.bindTooltip(
-        () =>
-          `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
-              ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
-            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
-        { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
-      );
-      m.on("click", () => focusRef.current(c.id));
-      markers.push(m);
-    }
+    const handle = requestAnimationFrame(() => {
+      const next = new Set<string>();
+      const toAdd: L.CircleMarker[] = [];
+      const toRemove: L.CircleMarker[] = [];
+      const existing = markerMapRef.current;
 
-    // Bulk replace — this is the entire reason we use markerClusterGroup
-    // over a plain L.layerGroup. addLayers/removeLayers are batched and
-    // chunked across animation frames internally.
-    cluster.clearLayers();
-    cluster.addLayers(markers);
+      // Pass 1: figure out additions
+      for (const c of cases) {
+        if (c.lat == null || c.lon == null) continue;
+        next.add(c.id);
+        if (existing.has(c.id)) continue;
+
+        const color = CASE_TYPE_COLOR[c.caseType];
+        const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
+        const m = L.circleMarker([c.lat, c.lon], {
+          radius,
+          color,
+          fillColor: color,
+          fillOpacity: 0.6,
+          weight: 1,
+        });
+        m.bindTooltip(
+          () =>
+            `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
+                ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
+              <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
+          { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
+        );
+        m.on("click", () => focusRef.current(c.id));
+        existing.set(c.id, m);
+        toAdd.push(m);
+      }
+
+      // Pass 2: figure out removals
+      for (const [id, m] of existing) {
+        if (next.has(id)) continue;
+        toRemove.push(m);
+        existing.delete(id);
+      }
+
+      // Bulk apply both deltas — markercluster batches these properly.
+      if (toRemove.length > 0) cluster.removeLayers(toRemove);
+      if (toAdd.length > 0) cluster.addLayers(toAdd);
+    });
+
+    return () => cancelAnimationFrame(handle);
   }, [cases]);
 
   // Fly to the selected country's *geographic* centre (or back to the world)
