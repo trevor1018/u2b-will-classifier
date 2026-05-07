@@ -1,10 +1,58 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import "leaflet.markercluster";
 import { Globe2 } from "lucide-react";
 import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
+import type { CaseRecord } from "../lib/types";
 import { COUNTRY_GEO } from "../lib/countryGeo";
+
+// Some cases share an identical lat/lon (country-centroid fallback when the
+// LLM didn't extract a city). Stacked points never separate at any zoom, so
+// the user only sees the cluster icon and a synthetic "spiderfy" fan that
+// looks unrelated to real geography.
+//
+// Compute deterministic display coords: cases that share a position get
+// distributed on a small circle around it (radius scales with √count, so
+// 21 cases on the US centroid spread across ~75km, still inside the
+// country). Single-point cases keep their real coords.
+function buildDisplayCoords(
+  allCases: CaseRecord[],
+): Map<string, [number, number]> {
+  const groups = new Map<string, CaseRecord[]>();
+  for (const c of allCases) {
+    if (c.lat == null || c.lon == null) continue;
+    // Round to ~1km precision so near-duplicates also bunch together
+    const key = `${c.lat.toFixed(2)},${c.lon.toFixed(2)}`;
+    let arr = groups.get(key);
+    if (!arr) {
+      arr = [];
+      groups.set(key, arr);
+    }
+    arr.push(c);
+  }
+  const out = new Map<string, [number, number]>();
+  for (const [key, group] of groups) {
+    if (group.length === 1) {
+      out.set(group[0].id, [group[0].lat!, group[0].lon!]);
+      continue;
+    }
+    // Sort by id so positions are stable across filter changes
+    group.sort((a, b) => a.id.localeCompare(b.id));
+    const [baseLat, baseLon] = key.split(",").map(Number);
+    // ~0.15° per √n keeps the cloud reasonable: 5→0.34°, 21→0.69°, 50→1.06°
+    const radius = Math.min(1.5, 0.15 * Math.sqrt(group.length));
+    for (let i = 0; i < group.length; i++) {
+      const angle = (i * 2 * Math.PI) / group.length;
+      out.set(group[i].id, [
+        baseLat + radius * Math.sin(angle),
+        // Compensate longitude for latitude (1°lon shrinks at high lat)
+        baseLon + (radius * Math.cos(angle)) / Math.max(0.2, Math.cos((baseLat * Math.PI) / 180)),
+      ]);
+    }
+  }
+  return out;
+}
 
 // Strategy stack (top = applied first):
 //
@@ -19,10 +67,18 @@ import { COUNTRY_GEO } from "../lib/countryGeo";
 //     while clustering recomputes)
 export function MapView() {
   const cases = useFilteredCases();
+  // Use ALL cases (not filtered) for jitter computation so a case's display
+  // position stays stable regardless of which others are currently visible.
+  const allCases = useStore((s) => s.cases);
   const country = useStore((s) => s.country);
   const focus = useStore((s) => s.focusCase);
   const focusRef = useRef(focus);
   focusRef.current = focus;
+
+  const displayCoords = useMemo(
+    () => buildDisplayCoords(allCases),
+    [allCases],
+  );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -57,7 +113,13 @@ export function MapView() {
     const cluster = (L as any).markerClusterGroup({
       maxClusterRadius: 40,
       showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
+      // No spiderfy: jittered display coords already separate stacked
+      // points naturally as the user zooms in.
+      spiderfyOnMaxZoom: false,
+      // At country-zoom and beyond, every marker is shown individually.
+      // (zoomToBoundsOnClick still kicks in at lower zooms when a cluster
+      // is clicked, so the experience is: click cluster → zoom in → dots.)
+      disableClusteringAtZoom: 6,
       chunkedLoading: true,
       removeOutsideVisibleBounds: true,
       iconCreateFunction: (cluster: { getChildCount: () => number }) => {
@@ -102,9 +164,10 @@ export function MapView() {
         next.add(c.id);
         if (existing.has(c.id)) continue;
 
+        const pos = displayCoords.get(c.id) ?? [c.lat, c.lon];
         const color = CASE_TYPE_COLOR[c.caseType];
         const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
-        const m = L.circleMarker([c.lat, c.lon], {
+        const m = L.circleMarker(pos, {
           radius,
           color,
           fillColor: color,
