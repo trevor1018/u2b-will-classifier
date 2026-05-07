@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
+import { COUNTRY_GEO } from "../lib/countryGeo";
 
 // One imperative Leaflet map handles 400+ markers far cheaper than 400+
 // React `<CircleMarker>` instances — and avoids the per-marker prop-churn
@@ -10,8 +11,12 @@ import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
 // Behaviour:
 //  - Initial view = entire world, single copy
 //  - minZoom + maxBounds prevent zooming out far enough to see world repeat
-//  - Selecting a country (from FilterBar) flies the map to that country's
-//    case-bounding-box; deselecting flies back to the world view.
+//  - Selecting a country flies the map to that country's *geographic* centre
+//    (from a static dict, not the case data points — cross-border cases &
+//    sparse data made the bounds approach misleading)
+//  - Click marker → opens the right-hand CaseDetailDrawer (with YT embed).
+//    Hover for a quick tooltip; no Leaflet popup that could be clipped by
+//    panel overflow on small viewports.
 export function MapView() {
   const cases = useFilteredCases();
   const country = useStore((s) => s.country);
@@ -42,15 +47,13 @@ export function MapView() {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
-        noWrap: true, // don't repeat tiles past the antimeridian
+        noWrap: true,
         bounds: L.latLngBounds([-85, -180], [85, 180]),
       },
     ).addTo(map);
     const layer = L.layerGroup().addTo(map);
     mapRef.current = map;
     markerLayerRef.current = layer;
-    // Force a quick re-fit on next tick so the map sizes itself correctly
-    // even when the panel was hidden during initial mount.
     setTimeout(() => map.invalidateSize(), 100);
     return () => {
       map.remove();
@@ -67,8 +70,6 @@ export function MapView() {
     cases.forEach((c) => {
       if (c.lat == null || c.lon == null) return;
       const color = CASE_TYPE_COLOR[c.caseType];
-      // Half the previous radius — easier to see clusters of markers in
-      // dense regions like Japan / USA.
       const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
       const marker = L.circleMarker([c.lat, c.lon], {
         radius,
@@ -76,53 +77,39 @@ export function MapView() {
         fillColor: color,
         fillOpacity: 0.6,
         weight: 1,
-      }).bindPopup(
-        `<div style="font-size:11px;letter-spacing:.05em;color:#a3e635;text-transform:uppercase;">
+      }).bindTooltip(
+        // Lightweight hover preview. Stays inside the map pane and doesn't
+        // open on click (so no fight with the drawer).
+        `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
             ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
           </div>
-          <div style="font-size:13px;font-weight:700;margin-top:4px;">${escapeHtml(c.caseName)}</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
-            ${escapeHtml(c.country ?? "?")} · ${escapeHtml(c.city ?? "?")} · ${c.crimeYear ?? "?"}
-          </div>
-          <div style="font-size:11px;color:#6b7280;margin-top:2px;">
-            ${c.viewCount.toLocaleString()} 觀看
-          </div>`,
+          <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
+          <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
+        { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
       );
       marker.on("click", () => focusRef.current(c.id));
       marker.addTo(layer);
     });
   }, [cases]);
 
-  // Fly to the selected country (or back to the world)
+  // Fly to the selected country's *geographic* centre (or back to the world)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (!country) {
-      // Reset to world view
       map.flyTo([20, 0], 2, { duration: 0.6 });
       return;
     }
 
-    // Build a bounding box from all cases of the selected country with coords
-    const points: L.LatLng[] = [];
-    cases.forEach((c) => {
-      if (c.country === country && c.lat != null && c.lon != null) {
-        points.push(L.latLng(c.lat, c.lon));
-      }
-    });
-
-    if (points.length === 0) {
-      // No coords → don't move (e.g. "不明")
+    const geo = COUNTRY_GEO[country];
+    if (geo) {
+      map.flyTo([geo.lat, geo.lon], geo.zoom, { duration: 0.8 });
       return;
     }
-    const bounds = L.latLngBounds(points);
-    // Pad so markers aren't right at the edge
-    map.flyToBounds(bounds.pad(0.3), {
-      duration: 0.8,
-      maxZoom: 6, // don't zoom in too aggressively for tiny single-city sets
-    });
-  }, [country, cases]);
+
+    // Country not in our static dict (e.g. "不明") → don't move the map
+  }, [country]);
 
   return <div ref={containerRef} className="h-[480px]" />;
 }

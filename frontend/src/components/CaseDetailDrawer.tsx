@@ -18,8 +18,11 @@ export function CaseDetailDrawer() {
   const ytEmbed = `https://www.youtube.com/embed/${c.id}`;
 
   return (
+    // z-[1000] beats Leaflet's controls (which sit at ~1000) and any other
+    // map-internal panes, so the drawer always stacks on top regardless of
+    // which panel the user clicked from.
     <div
-      className="fixed inset-0 z-40 flex justify-end bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[1000] flex justify-end bg-black/70 backdrop-blur-sm"
       onClick={() => focus(null)}
     >
       <aside
