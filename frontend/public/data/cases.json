@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T10:06:20.068880+00:00",
+  "generatedAt": "2026-05-08T10:08:53.850112+00:00",
   "source": "youtube-api",
   "channel": {
     "id": "UCOyshL6rKK1GqwoEfy_ehBg",
@@ -2945,9 +2945,9 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "海上",
-      "city": "加勒比海 (郵輪墜海合集)",
-      "lat": 21.87,
-      "lon": -78.49,
+      "city": "北大西洋 (3 條航線中點平均)",
+      "lat": 30.51,
+      "lon": -50.87,
       "caseType": "mystery",
       "status": "unknown",
       "memberOnly": false,
