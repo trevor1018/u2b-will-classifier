@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T13:21:14.024297+00:00",
+  "generatedAt": "2026-05-08T13:23:23.457536+00:00",
   "source": "youtube-api",
   "channel": {
     "id": "UCOyshL6rKK1GqwoEfy_ehBg",
@@ -5647,9 +5647,9 @@
       "crimeYear": 2010,
       "resolveYear": 2023,
       "country": "新加坡",
-      "city": "義順 (Yishun) 培英街",
-      "lat": 1.4178,
-      "lon": 103.8304,
+      "city": "培英街 (Bain Street, Bras Basah)",
+      "lat": 1.2971,
+      "lon": 103.854,
       "caseType": "missing",
       "status": "partial",
       "memberOnly": false,
