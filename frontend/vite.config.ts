@@ -12,11 +12,11 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       output: {
         // Split heavy viz libs so initial paint downloads less JS up-front.
+        // (Cytoscape and vis-timeline were dropped along with the Network /
+        // per-case Timeline views.)
         manualChunks: {
           echarts: ["echarts", "echarts-for-react"],
           leaflet: ["leaflet", "react-leaflet"],
-          cytoscape: ["cytoscape"],
-          vis: ["vis-timeline/standalone"],
         },
       },
     },

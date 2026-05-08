@@ -1,105 +1,184 @@
-import { useEffect, useMemo, useRef } from "react";
-import { DataSet, Timeline } from "vis-timeline/standalone";
+import { useMemo } from "react";
+import ReactECharts from "echarts-for-react";
 import { useFilteredCases, useStore } from "../lib/store";
-import { CASE_TYPE_COLOR, CASE_TYPE_LABEL } from "../lib/types";
+import {
+  CASE_TYPE_COLOR,
+  CASE_TYPE_LABEL,
+  type CaseType,
+} from "../lib/types";
 
-interface TimelineItem {
-  id: string;
-  group: number;
-  start: string;
-  end?: string;
-  content: string;
-  title: string;
-  style: string;
-}
+// Stacked-bar histogram by decade.
+// X = decade buckets, Y = case count, stacked by case type.
+//
+// At 454 cases the previous per-case range chart was too dense to read.
+// This view keeps the time dimension but compresses to "how did case-type
+// composition shift across history".
+//
+// Behaviour:
+//  - Respects the current filter (cases already comes pre-filtered)
+//  - Click a decade bar → set the year-range filter to that decade
+//    (acts as a click-to-filter source as well)
+//  - Click again on the active decade → clears the year filter
+
+const ALL_CASE_TYPES: CaseType[] = [
+  "murder",
+  "missing",
+  "serial",
+  "kidnap",
+  "robbery",
+  "escape",
+  "fraud",
+  "cult",
+  "disaster",
+  "mystery",
+  "curio",
+  "other",
+];
 
 export function TimelineView() {
   const cases = useFilteredCases();
-  const focus = useStore((s) => s.focusCase);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<Timeline | null>(null);
-  // Hold a stable ref to the items DataSet so we don't have to fish it back
-  // out of vis-timeline's (private-ish) `itemsData` getter — that breaks under
-  // some minified prod builds.
-  const itemsDSRef = useRef<DataSet<TimelineItem> | null>(null);
-  const focusRef = useRef(focus);
-  focusRef.current = focus;
+  const yearRange = useStore((s) => s.yearRange);
+  const setYearRange = useStore((s) => s.setYearRange);
 
-  const items = useMemo<TimelineItem[]>(() => {
-    const out: TimelineItem[] = [];
-    cases.forEach((c) => {
-      const color = CASE_TYPE_COLOR[c.caseType];
-      const startYear = c.crimeYear;
-      const endYear = c.resolveYear ?? c.crimeYear;
-      if (startYear) {
-        out.push({
-          id: `${c.id}-case`,
-          group: 1,
-          start: `${startYear}-01-01`,
-          end: endYear ? `${endYear}-12-31` : undefined,
-          content: c.caseName,
-          title: `${c.caseName}（${CASE_TYPE_LABEL[c.caseType]}）${startYear}${
-            endYear && endYear !== startYear ? `–${endYear}` : ""
-          }`,
-          style: `background-color: ${color}33; border-color: ${color}; color: #f3f4f6;`,
-        });
-      }
-      out.push({
-        id: `${c.id}-pub`,
-        group: 2,
-        start: c.publishedAt,
-        content: `📺 ${c.caseName}`,
-        title: `影片發布：${new Date(c.publishedAt).toLocaleDateString("zh-Hant")}`,
-        style: `background-color: ${color}55; border-color: ${color}; color: #f3f4f6;`,
-      });
-    });
-    return out;
-  }, [cases]);
+  const option = useMemo(() => {
+    const decadeOf = (y: number) => Math.floor(y / 10) * 10;
+    const years = cases
+      .map((c) => c.crimeYear)
+      .filter((y): y is number => typeof y === "number");
 
-  // Init once
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const itemsDS = new DataSet<TimelineItem>([]);
-    const groupsDS = new DataSet([
-      { id: 1, content: "案件壽命", style: "color: #a3e635; font-weight: 600;" },
-      { id: 2, content: "影片發布", style: "color: #60a5fa; font-weight: 600;" },
-    ]);
-    const tl = new Timeline(containerRef.current, itemsDS, groupsDS, {
-      stack: true,
-      stackSubgroups: false,
-      orientation: { axis: "top", item: "top" },
-      zoomMin: 1000 * 60 * 60 * 24 * 30,
-      zoomMax: 1000 * 60 * 60 * 24 * 365 * 200,
-      margin: { item: 4, axis: 6 },
-      tooltip: { followMouse: true },
-    });
-    tl.on("click", (props: { item?: string }) => {
-      if (!props.item) return;
-      const id = String(props.item).replace(/-(case|pub)$/, "");
-      focusRef.current(id);
-    });
-    timelineRef.current = tl;
-    itemsDSRef.current = itemsDS;
-    return () => {
-      tl.destroy();
-      timelineRef.current = null;
-      itemsDSRef.current = null;
+    if (years.length === 0) {
+      return null;
+    }
+
+    const minDecade = decadeOf(Math.min(...years));
+    const maxDecade = decadeOf(Math.max(...years));
+
+    // Continuous decade list so empty buckets still show as 0 (preserves
+    // visual rhythm — gaps between active decades are part of the story).
+    const decades: number[] = [];
+    for (let d = minDecade; d <= maxDecade; d += 10) decades.push(d);
+
+    const countsByType = new Map<CaseType, number[]>();
+    for (const t of ALL_CASE_TYPES) {
+      countsByType.set(
+        t,
+        decades.map(() => 0),
+      );
+    }
+    for (const c of cases) {
+      if (typeof c.crimeYear !== "number") continue;
+      const idx = decades.indexOf(decadeOf(c.crimeYear));
+      if (idx < 0) continue;
+      const arr = countsByType.get(c.caseType);
+      if (arr) arr[idx]++;
+    }
+
+    // Highlight the currently-filtered decade(s) on the X axis labels
+    const isInFilteredRange = (decadeStart: number) => {
+      if (!yearRange) return false;
+      const decadeEnd = decadeStart + 9;
+      return decadeStart >= yearRange[0] && decadeEnd <= yearRange[1];
     };
-  }, []);
 
-  // Update items when filtered cases change
-  useEffect(() => {
-    const ds = itemsDSRef.current;
-    const tl = timelineRef.current;
-    if (!ds || !tl) return;
-    ds.clear();
-    ds.add(items);
-    if (items.length > 0) tl.fit({ animation: false });
-  }, [items]);
+    const series = ALL_CASE_TYPES.flatMap((t) => {
+      const data = countsByType.get(t)!;
+      if (!data.some((n) => n > 0)) return [];
+      return [
+        {
+          name: CASE_TYPE_LABEL[t],
+          type: "bar",
+          stack: "total",
+          barMaxWidth: 36,
+          itemStyle: { color: CASE_TYPE_COLOR[t] },
+          emphasis: { focus: "series" },
+          data: data.map((n, i) => ({
+            value: n,
+            // Make non-active-range bars slightly translucent when a year
+            // filter is in effect, so the active range pops.
+            itemStyle: yearRange
+              ? {
+                  color: CASE_TYPE_COLOR[t],
+                  opacity: isInFilteredRange(decades[i]) ? 1 : 0.3,
+                }
+              : undefined,
+          })),
+        },
+      ];
+    });
+
+    return {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        backgroundColor: "#0b1018",
+        borderColor: "#1f2937",
+        textStyle: { color: "#f3f4f6", fontSize: 12 },
+      },
+      legend: {
+        textStyle: { color: "#9ca3af", fontSize: 10 },
+        top: 4,
+        icon: "circle",
+        itemWidth: 8,
+        itemHeight: 8,
+      },
+      grid: { left: 48, right: 20, top: 38, bottom: 32 },
+      xAxis: {
+        type: "category",
+        data: decades.map((d) => `${d}s`),
+        axisLabel: { color: "#9ca3af", fontSize: 10, interval: 0 },
+        axisLine: { lineStyle: { color: "#374151" } },
+      },
+      yAxis: {
+        type: "value",
+        name: "案件數",
+        nameTextStyle: { color: "#9ca3af", fontSize: 10 },
+        axisLabel: { color: "#9ca3af", fontSize: 10 },
+        axisLine: { lineStyle: { color: "#374151" } },
+        splitLine: { lineStyle: { color: "#1f2937" } },
+      },
+      series,
+    };
+  }, [cases, yearRange]);
+
+  if (!option) {
+    return (
+      <div className="flex h-[280px] items-center justify-center text-sm text-gray-500">
+        該篩選下沒有可繪製的案發年份資料
+      </div>
+    );
+  }
+
+  // Click a decade bar → set year range to that decade. Click the active
+  // decade again → clear.
+  const handleEvents = {
+    click: (params: { name?: string }) => {
+      if (!params.name) return;
+      const decadeStart = parseInt(params.name, 10);
+      if (isNaN(decadeStart)) return;
+      const newRange: [number, number] = [decadeStart, decadeStart + 9];
+      // Toggle off if the same range is currently set
+      if (
+        yearRange &&
+        yearRange[0] === newRange[0] &&
+        yearRange[1] === newRange[1]
+      ) {
+        setYearRange(null);
+      } else {
+        setYearRange(newRange);
+      }
+    },
+  };
 
   return (
-    <div className="px-2 py-3">
-      <div ref={containerRef} className="h-[260px]" />
+    <div className="h-[280px]">
+      <ReactECharts
+        option={option}
+        style={{ height: "100%", width: "100%" }}
+        opts={{ renderer: "canvas" }}
+        onEvents={handleEvents}
+        notMerge={true}
+      />
     </div>
   );
 }

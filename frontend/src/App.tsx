@@ -9,7 +9,6 @@ import { MapView } from "./views/MapView";
 import { SunburstView } from "./views/SunburstView";
 import { TimelineView } from "./views/TimelineView";
 import { BubbleView } from "./views/BubbleView";
-import { NetworkView } from "./views/NetworkView";
 
 function App() {
   const setData = useStore((s) => s.setData);
@@ -49,14 +48,11 @@ function App() {
               <Panel className="lg:col-span-4" title="類型 × 狀態" subtitle="SUNBURST">
                 <SunburstView />
               </Panel>
-              <Panel className="lg:col-span-12" title="時間軸" subtitle="CHRONOLOGY">
+              <Panel className="lg:col-span-12" title="案件年代分布" subtitle="CHRONOLOGY">
                 <TimelineView />
               </Panel>
-              <Panel className="lg:col-span-7" title="觀眾熱度" subtitle="ENGAGEMENT">
+              <Panel className="lg:col-span-12" title="觀眾熱度" subtitle="ENGAGEMENT">
                 <BubbleView />
-              </Panel>
-              <Panel className="lg:col-span-5" title="案件關聯網路" subtitle="NETWORK">
-                <NetworkView />
               </Panel>
             </div>
           </>
