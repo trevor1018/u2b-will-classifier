@@ -201,6 +201,220 @@ def geocode_via_nominatim(
     return None
 
 
+DRILL_DOWN_SYSTEM = """你是案件地點細化研究員。給你一個已知城市的案件，
+你要用 web_search 把位置從「城市中心」細化到「街區/地標/飯店/車站」級。
+
+回傳 JSON，只有 JSON、不要其他文字。Schema：
+{
+  "landmark": str | null,   // 中文地標名 (例: 「Cecil Hotel」「澀谷站」「歌舞伎町」)
+  "city": str | null,       // 更具體的中文行政區 (例: 「洛杉磯市中心」「澀谷區」)
+  "lat": number | null,     // 地標精度經緯度
+  "lon": number | null,
+  "evidence": str | null    // 搜尋摘要中的關鍵句
+}
+
+關鍵規則：
+- 用 web_search 工具去查
+- 找不到明確 landmark → 全部 null（保持現有 city 中心）
+- 不要 hallucinate；寧可 null 也不要錯
+- 跨國案件：用實際案發地點，不是受害者國籍
+- lat/lon 必須在已知城市範圍內（合理性檢查）
+"""
+
+
+def drill_down_via_web_search(
+    client,
+    title: str,
+    case_name: str,
+    country: str | None,
+    city: str | None,
+    current_lat: float | None,
+    current_lon: float | None,
+    max_retries: int = 3,
+) -> dict[str, Any] | None:
+    """Use web_search to refine an already-pinned city to a landmark/district.
+    Returns parsed dict (with lat/lon if found) or None.
+    """
+    user_msg = (
+        f"案件名稱：{case_name}\n"
+        f"影片標題：{title}\n"
+        f"已知國家：{country}\n"
+        f"已知城市：{city}\n\n"
+        f"請用 web_search 找出該案件在 {city} 的具體地標/街區/飯店/車站位置，"
+        f"回傳 JSON。"
+    )
+    backoff = 30
+    for attempt in range(max_retries):
+        try:
+            msg = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=400,
+                tools=[
+                    {
+                        "type": "web_search_20250305",
+                        "name": "web_search",
+                        "max_uses": 2,
+                    }
+                ],
+                system=DRILL_DOWN_SYSTEM,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            break
+        except Exception as e:
+            err_str = str(e)
+            if "rate_limit_error" in err_str or "429" in err_str:
+                print(
+                    f"  ! 429 — sleeping {backoff}s ({attempt + 1}/{max_retries})",
+                    file=sys.stderr,
+                )
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+            print(f"  ! drill-down call failed: {e}", file=sys.stderr)
+            return None
+    else:
+        return None
+
+    text = "".join(b.text for b in msg.content if hasattr(b, "text")).strip()
+    if not text:
+        return None
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.startswith("json"):
+            text = text[4:].strip()
+    try:
+        result = json.loads(text)
+    except json.JSONDecodeError:
+        import re
+
+        m = re.search(r"\{[^{}]*\}", text, re.DOTALL)
+        if not m:
+            return None
+        try:
+            result = json.loads(m.group(0))
+        except json.JSONDecodeError:
+            return None
+
+    # Sanity check: if coords are >150km from current city centre, reject —
+    # LLM probably got confused and returned a different city's landmark.
+    if (
+        result.get("lat") is not None
+        and result.get("lon") is not None
+        and current_lat is not None
+        and current_lon is not None
+    ):
+        from math import cos, radians
+
+        dlat = abs(result["lat"] - current_lat)
+        dlon = abs(result["lon"] - current_lon) * cos(radians(current_lat))
+        # Rough degrees → km. 1° ≈ 111 km
+        dist_km = ((dlat ** 2 + dlon ** 2) ** 0.5) * 111
+        if dist_km > 150:
+            print(
+                f"  ! drill-down rejected: {dist_km:.0f}km from current city (likely wrong)",
+                file=sys.stderr,
+            )
+            return None
+
+    return result
+
+
+def drill_down_top_city_stacks(
+    cache: dict[str, dict[str, Any]],
+    cases: list[dict[str, Any]],
+    raw_videos: dict[str, dict[str, Any]],
+    top_n_groups: int = 6,
+) -> int:
+    """For the N largest city-coord stacks (multiple cases at exactly the
+    same lat/lon), use web_search to drill down to landmark precision.
+    """
+    if not ANTHROPIC_API_KEY:
+        print("⚠ ANTHROPIC_API_KEY missing — skipping drill-down", file=sys.stderr)
+        return 0
+
+    from collections import defaultdict
+    from country_centroids import COUNTRY_CENTROIDS
+
+    # Identify city-stack groups (exact same lat/lon, not country centroid)
+    country_centroid_keys = {
+        (round(v[0], 4), round(v[1], 4))
+        for v in COUNTRY_CENTROIDS.values()
+        if v is not None
+    }
+    groups: dict[tuple[float, float], list[dict]] = defaultdict(list)
+    for c in cases:
+        if c["lat"] is None or c["lon"] is None:
+            continue
+        key = (round(c["lat"], 4), round(c["lon"], 4))
+        if key in country_centroid_keys:
+            continue
+        groups[key].append(c)
+
+    # Filter to >1 case per group, sort by size descending
+    multi = [(k, v) for k, v in groups.items() if len(v) > 1]
+    multi.sort(key=lambda x: -len(x[1]))
+    target_groups = multi[:top_n_groups]
+
+    targets: list[dict] = []
+    for _, group in target_groups:
+        targets.extend(group)
+
+    if not targets:
+        print("Drill-down: no city stacks found.")
+        return 0
+
+    print(
+        f"Drill-down: top {len(target_groups)} city-stack groups, "
+        f"{len(targets)} cases. Pacing 16s/call to stay under 50k tok/min."
+    )
+
+    from anthropic import Anthropic
+
+    client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    fixed = 0
+    INTER_CALL_DELAY = 16
+
+    for idx, c in enumerate(targets, 1):
+        vid = c["id"]
+        v = raw_videos.get(vid)
+        if not v:
+            continue
+        title = v.get("snippet", {}).get("title", "")
+        case_name = c["caseName"]
+        country = c.get("country")
+        city = c.get("city")
+        if not city or city in {"不明", "未知", "未明"}:
+            print(f"  [{idx}/{len(targets)}] {case_name[:25]} -> no city to drill from")
+            continue
+
+        result = drill_down_via_web_search(
+            client, title, case_name, country, city, c["lat"], c["lon"]
+        )
+        if result and result.get("lat") is not None and result.get("lon") is not None:
+            cache.setdefault(vid, {})
+            cache[vid]["lat"] = result["lat"]
+            cache[vid]["lon"] = result["lon"]
+            if result.get("city"):
+                cache[vid]["city"] = result["city"]
+            fixed += 1
+            ev = (result.get("evidence") or "")[:30]
+            print(
+                f"  [{idx}/{len(targets)}] {case_name[:25]} -> "
+                f"{result.get('landmark', '?')} "
+                f"({result['lat']:.4f}, {result['lon']:.4f})  «{ev}»"
+            )
+        else:
+            print(f"  [{idx}/{len(targets)}] {case_name[:25]} -> no landmark found")
+        if idx % 5 == 0:
+            save_classification_cache(cache)
+        if idx < len(targets):
+            time.sleep(INTER_CALL_DELAY)
+
+    save_classification_cache(cache)
+    print(f"Drill-down: {fixed}/{len(targets)} refined to landmark precision")
+    return fixed
+
+
 WEB_SEARCH_SYSTEM = """你是案件地點研究員。給你一個案件名稱與影片標題，
 你會用 web_search 工具找出該案件的「具體發生地點」(city + 經緯度)。
 
@@ -878,6 +1092,20 @@ def main() -> int:
              "use Claude's web_search tool to find the real location. "
              "Costs ~$0.01 per remaining case (~$0.40 total).",
     )
+    p.add_argument(
+        "--drill-down-cities",
+        action="store_true",
+        help="For top-6 city-stack groups (multiple cases at the same city "
+             "centre), use web_search to find landmark/district precision. "
+             "Costs ~$0.50 for ~49 cases.",
+    )
+    p.add_argument(
+        "--drill-down-top",
+        type=int,
+        default=6,
+        help="How many top city-stack groups to drill down (default 6). "
+             "All 33 = ~111 cases ~$1.10.",
+    )
     args = p.parse_args()
 
     if not YT_API_KEY:
@@ -904,6 +1132,23 @@ def main() -> int:
     if args.limit > 0:
         videos = videos[: args.limit]
         print(f"  limited to first {len(videos)} videos")
+
+    # Standalone drill-down pass: refine city-stack cases to landmark precision
+    if args.drill_down_cities:
+        cache = load_classification_cache()
+        cases = json.loads(OUTPUT.read_text(encoding="utf-8"))["cases"]
+        raw_by_id = {v["id"]: v for v in videos}
+        drill_down_top_city_stacks(cache, cases, raw_by_id, top_n_groups=args.drill_down_top)
+        # Rebuild cases.json from updated cache
+        classifications = {
+            v["id"]: cache[v["id"]] for v in videos if v["id"] in cache
+        }
+        payload = build_payload(videos, classifications)
+        OUTPUT.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"Wrote {len(payload['cases'])} cases -> {OUTPUT}")
+        return 0
 
     # Standalone web-search lookup pass: for cases LLM couldn't pin down,
     # let Claude search the web for the real location. Costs ~$0.40 / 55 cases.
