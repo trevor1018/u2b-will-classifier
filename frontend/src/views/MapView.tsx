@@ -22,7 +22,14 @@ function buildDisplayCoords(
   const groups = new Map<string, CaseRecord[]>();
   for (const c of allCases) {
     if (c.lat == null || c.lon == null) continue;
-    // Round to ~1km precision so near-duplicates also bunch together
+    // ~1km bucket. Cases within 1km of each other share a key and get
+    // visually separated by jitter, otherwise their exact distinct coords
+    // are kept. Solves both extremes:
+    //   - LLM gave the same city-centre to many cases → all in one bucket,
+    //     spread out so each is clickable
+    //   - Two cases at slightly-different coords <1km apart (e.g. both at
+    //     Itaewon — 270m apart in the real data) still get jittered apart
+    //     enough to not visually occlude each other at country zoom
     const key = `${c.lat.toFixed(2)},${c.lon.toFixed(2)}`;
     let arr = groups.get(key);
     if (!arr) {
@@ -40,8 +47,11 @@ function buildDisplayCoords(
     // Sort by id so positions are stable across filter changes
     group.sort((a, b) => a.id.localeCompare(b.id));
     const [baseLat, baseLon] = key.split(",").map(Number);
-    // ~0.15° per √n keeps the cloud reasonable: 5→0.34°, 21→0.69°, 50→1.06°
-    const radius = Math.min(1.5, 0.15 * Math.sqrt(group.length));
+    // Tighter than the previous 0.15·√n. With 0.07: n=2 → 0.10° (≈11km),
+    // n=12 → 0.24° (≈27km), n=21 → 0.32° (≈36km). Big enough to be
+    // visibly separated at country zoom (≥6) but always inside the
+    // country, never flung out to a neighbour.
+    const radius = Math.min(0.4, 0.07 * Math.sqrt(group.length));
     for (let i = 0; i < group.length; i++) {
       const angle = (i * 2 * Math.PI) / group.length;
       out.set(group[i].id, [
