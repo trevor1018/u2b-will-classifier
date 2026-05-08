@@ -22,6 +22,15 @@ export type CaseType =
   | "curio"         // 奇人異事
   | "other";
 
+/** Optional secondary pin for multi-incident / compilation cases. */
+export interface CasePoint {
+  lat: number;
+  lon: number;
+  city?: string;
+  /** Optional label shown in tooltip (e.g. route description) */
+  label?: string;
+}
+
 export interface CaseRecord {
   /** YouTube video id */
   id: string;
@@ -49,9 +58,14 @@ export interface CaseRecord {
   country?: string;
   /** City / region */
   city?: string;
-  /** Geo coordinates (lon/lat). Lat goes second to match leaflet [lat, lon] later. */
+  /** Primary geo coords. Used by all non-map views (filter, etc.). */
   lat?: number;
   lon?: number;
+  /** Optional list of additional pins to plot for this case. When set, the
+   *  map renders one marker per point (each clickable, all opening the same
+   *  case detail). The primary lat/lon stays the "summary" location used
+   *  by other views. */
+  points?: CasePoint[];
   /** Case classification */
   caseType: CaseType;
   status: CaseStatus;

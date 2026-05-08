@@ -4,8 +4,47 @@ import "leaflet.markercluster";
 import { Globe2 } from "lucide-react";
 import { useStore, useFilteredCases } from "../lib/store";
 import { CASE_TYPE_COLOR, CASE_TYPE_LABEL, STATUS_LABEL } from "../lib/types";
-import type { CaseRecord } from "../lib/types";
+import type { CaseRecord, CasePoint } from "../lib/types";
 import { COUNTRY_GEO } from "../lib/countryGeo";
+
+// Expand a case into one or more (lat, lon, label, key) entries that the map
+// will draw as separate markers. Multi-incident / compilation cases (e.g. a
+// cruise overboard compilation with three different cruise routes) carry an
+// optional `points` array; if present we use that, otherwise fall back to the
+// case's single primary lat/lon.
+interface RenderablePoint {
+  caseId: string;
+  /** Unique per-marker key — `${caseId}#${pointIndex}` */
+  key: string;
+  lat: number;
+  lon: number;
+  /** What to show in the tooltip's location row */
+  city: string | undefined;
+}
+
+function expandPoints(c: CaseRecord): RenderablePoint[] {
+  if (c.points && c.points.length > 0) {
+    return c.points.map((p, i) => ({
+      caseId: c.id,
+      key: `${c.id}#${i}`,
+      lat: p.lat,
+      lon: p.lon,
+      city: p.label || p.city || c.city,
+    }));
+  }
+  if (c.lat != null && c.lon != null) {
+    return [
+      {
+        caseId: c.id,
+        key: c.id,
+        lat: c.lat,
+        lon: c.lon,
+        city: c.city,
+      },
+    ];
+  }
+  return [];
+}
 
 // Some cases share an identical lat/lon (country-centroid fallback when the
 // LLM didn't extract a city). Stacked points never separate at any zoom, so
@@ -19,33 +58,29 @@ import { COUNTRY_GEO } from "../lib/countryGeo";
 function buildDisplayCoords(
   allCases: CaseRecord[],
 ): Map<string, [number, number]> {
-  const groups = new Map<string, CaseRecord[]>();
+  const groups = new Map<string, RenderablePoint[]>();
+  // Walk all renderable points (one case can contribute multiple)
   for (const c of allCases) {
-    if (c.lat == null || c.lon == null) continue;
-    // ~1km bucket. Cases within 1km of each other share a key and get
-    // visually separated by jitter, otherwise their exact distinct coords
-    // are kept. Solves both extremes:
-    //   - LLM gave the same city-centre to many cases → all in one bucket,
-    //     spread out so each is clickable
-    //   - Two cases at slightly-different coords <1km apart (e.g. both at
-    //     Itaewon — 270m apart in the real data) still get jittered apart
-    //     enough to not visually occlude each other at country zoom
-    const key = `${c.lat.toFixed(2)},${c.lon.toFixed(2)}`;
-    let arr = groups.get(key);
-    if (!arr) {
-      arr = [];
-      groups.set(key, arr);
+    for (const p of expandPoints(c)) {
+      // ~1km bucket. Two markers within 1km share a key and get visually
+      // separated by jitter; otherwise their exact distinct coords stay.
+      const key = `${p.lat.toFixed(2)},${p.lon.toFixed(2)}`;
+      let arr = groups.get(key);
+      if (!arr) {
+        arr = [];
+        groups.set(key, arr);
+      }
+      arr.push(p);
     }
-    arr.push(c);
   }
   const out = new Map<string, [number, number]>();
   for (const [key, group] of groups) {
     if (group.length === 1) {
-      out.set(group[0].id, [group[0].lat!, group[0].lon!]);
+      out.set(group[0].key, [group[0].lat, group[0].lon]);
       continue;
     }
-    // Sort by id so positions are stable across filter changes
-    group.sort((a, b) => a.id.localeCompare(b.id));
+    // Sort by key so positions are stable across filter changes
+    group.sort((a, b) => a.key.localeCompare(b.key));
     const [baseLat, baseLon] = key.split(",").map(Number);
     // Tighter than the previous 0.15·√n. With 0.07: n=2 → 0.10° (≈11km),
     // n=12 → 0.24° (≈27km), n=21 → 0.32° (≈36km). Big enough to be
@@ -54,7 +89,7 @@ function buildDisplayCoords(
     const radius = Math.min(0.4, 0.07 * Math.sqrt(group.length));
     for (let i = 0; i < group.length; i++) {
       const angle = (i * 2 * Math.PI) / group.length;
-      out.set(group[i].id, [
+      out.set(group[i].key, [
         baseLat + radius * Math.sin(angle),
         // Compensate longitude for latitude (1°lon shrinks at high lat)
         baseLon + (radius * Math.cos(angle)) / Math.max(0.2, Math.cos((baseLat * Math.PI) / 180)),
@@ -168,41 +203,44 @@ export function MapView() {
       const toRemove: L.CircleMarker[] = [];
       const existing = markerMapRef.current;
 
-      // Pass 1: figure out additions
+      // Pass 1: figure out additions. Each case may contribute >1 marker
+      // when it carries a `points` array (e.g. cruise compilation).
       for (const c of cases) {
-        if (c.lat == null || c.lon == null) continue;
-        next.add(c.id);
-        if (existing.has(c.id)) continue;
+        for (const p of expandPoints(c)) {
+          next.add(p.key);
+          if (existing.has(p.key)) continue;
 
-        const pos = displayCoords.get(c.id) ?? [c.lat, c.lon];
-        const color = CASE_TYPE_COLOR[c.caseType];
-        const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
-        const m = L.circleMarker(pos, {
-          radius,
-          color,
-          fillColor: color,
-          fillOpacity: 0.6,
-          weight: 1,
-        });
-        m.bindTooltip(
-          () =>
-            `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
-                ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
-              <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.country ?? "?")} · ${c.crimeYear ?? "?"}</div>`,
-          { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
-        );
-        m.on("click", () => focusRef.current(c.id));
-        existing.set(c.id, m);
-        toAdd.push(m);
+          const pos = displayCoords.get(p.key) ?? [p.lat, p.lon];
+          const color = CASE_TYPE_COLOR[c.caseType];
+          const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
+          const m = L.circleMarker(pos, {
+            radius,
+            color,
+            fillColor: color,
+            fillOpacity: 0.6,
+            weight: 1,
+          });
+          const tooltipCity = p.city ?? c.city ?? "?";
+          m.bindTooltip(
+            () =>
+              `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
+                  ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
+                </div>
+                <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
+                <div style="font-size:11px;color:#9ca3af;">${escapeHtml(tooltipCity)} · ${c.crimeYear ?? "?"}</div>`,
+            { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
+          );
+          m.on("click", () => focusRef.current(c.id));
+          existing.set(p.key, m);
+          toAdd.push(m);
+        }
       }
 
       // Pass 2: figure out removals
-      for (const [id, m] of existing) {
-        if (next.has(id)) continue;
+      for (const [key, m] of existing) {
+        if (next.has(key)) continue;
         toRemove.push(m);
-        existing.delete(id);
+        existing.delete(key);
       }
 
       // Bulk apply both deltas — markercluster batches these properly.

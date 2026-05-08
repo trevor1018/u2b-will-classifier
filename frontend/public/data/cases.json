@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T10:08:53.850112+00:00",
+  "generatedAt": "2026-05-08T10:11:53.718558+00:00",
   "source": "youtube-api",
   "channel": {
     "id": "UCOyshL6rKK1GqwoEfy_ehBg",
@@ -2945,14 +2945,34 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "海上",
-      "city": "北大西洋 (3 條航線中點平均)",
+      "city": "三條郵輪航線 (合集)",
       "lat": 30.51,
       "lon": -50.87,
       "caseType": "mystery",
       "status": "unknown",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "points": [
+        {
+          "lat": 21.87,
+          "lon": -78.49,
+          "city": "加勒比海",
+          "label": "邁阿密 → 牙買加 中點"
+        },
+        {
+          "lat": 44.47,
+          "lon": 14.38,
+          "city": "亞得里亞海",
+          "label": "克羅地亞 → 威尼斯 中點"
+        },
+        {
+          "lat": 25.19,
+          "lon": -88.5,
+          "city": "墨西哥灣",
+          "label": "紐奧良 → 科蘇梅爾 中點"
+        }
+      ]
     },
     {
       "id": "SNG2c7WhpRE",

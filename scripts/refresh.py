@@ -657,6 +657,7 @@ def load_classification_cache() -> dict[str, dict[str, Any]]:
         classified_fields = (
             "caseName", "country", "city", "lat", "lon",
             "crimeYear", "resolveYear", "caseType", "status", "tags",
+            "points",  # multi-pin list for compilation cases
         )
         for c in prev.get("cases", []):
             vid = c.get("id")
@@ -665,7 +666,9 @@ def load_classification_cache() -> dict[str, dict[str, Any]]:
             # Skip "uncached" rows (default-only fields suggest never classified)
             if c.get("caseType") in (None, "other") and c.get("country") is None:
                 continue
-            derived[vid] = {k: c.get(k) for k in classified_fields}
+            derived[vid] = {
+                k: c.get(k) for k in classified_fields if c.get(k) is not None
+            }
         if derived:
             print(f"  (derived {len(derived)} cache entries from committed cases.json)")
         return derived
@@ -1026,6 +1029,9 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
                 "memberOnly": False,  # API does not directly expose this
                 "tags": cl.get("tags") or [],
                 "milestones": [],
+                # Pass through optional multi-pin list for compilation /
+                # multi-incident cases (cruise overboard compilation, etc.)
+                **({"points": cl["points"]} if cl.get("points") else {}),
             }
         )
     cases.sort(key=lambda c: c["publishedAt"], reverse=True)
