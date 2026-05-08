@@ -202,28 +202,10 @@ export function TimelineView() {
 
     return {
       backgroundColor: "transparent",
-      tooltip: {
-        backgroundColor: "#0b1018",
-        borderColor: "#1f2937",
-        textStyle: { color: "#f3f4f6", fontSize: 12 },
-        formatter: (p: { data: { name: string; value: unknown[] } }) => {
-          const v = p.data.value;
-          const realStart = v[6] as number;
-          const realEnd = v[7] as number;
-          const span =
-            realEnd - realStart > 0.5
-              ? `${realStart}–${Math.floor(realEnd)}`
-              : `${realStart}`;
-          const t = v[3] as CaseType;
-          const note =
-            realStart < GANTT_MIN_YEAR
-              ? `<div style="font-size:10px;color:#fbbf24;">＊1900年前案件，已壓在左軸</div>`
-              : "";
-          return `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">${CASE_TYPE_LABEL[t]}</div>
-            <div style="font-weight:700;color:#f3f4f6;">${escapeHtml(p.data.name)}</div>
-            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>${note}`;
-        },
-      },
+      // No tooltip on the overview — the dense 12-lane chart is for
+      // pattern-spotting, not per-case inspection. Drill into a type
+      // (click the y-axis label) to enable per-case hover.
+      tooltip: { show: false },
       grid: { left: 80, right: 20, top: 12, bottom: 56 },
       dataZoom: [
         {
@@ -289,6 +271,9 @@ export function TimelineView() {
       series: [
         {
           type: "custom",
+          // Disable hover highlight on overview bars (matches "no hover"
+          // in this mode — pattern-only, not per-case interaction).
+          emphasis: { disabled: true },
           renderItem: (
             _params: unknown,
             api: {
@@ -314,6 +299,10 @@ export function TimelineView() {
                 width,
                 height: barHeight,
               },
+              // silent: bar itself doesn't react to hover/click — only the
+              // y-axis labels do (drill-into-type). Keeps the overview as
+              // a static visualisation.
+              silent: true,
               style: api.style({ opacity: 0.75 }),
             };
           },
