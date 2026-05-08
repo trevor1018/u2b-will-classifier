@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
-import { BarChart3, BarChartHorizontal, FilterX, RotateCcw } from "lucide-react";
+import { BarChart3, BarChartHorizontal, RotateCcw } from "lucide-react";
 import { useFilteredCases, useStore } from "../lib/store";
 import {
   CASE_TYPE_COLOR,
@@ -41,7 +41,9 @@ export function TimelineView() {
   const yearRange = useStore((s) => s.yearRange);
   const setYearRange = useStore((s) => s.setYearRange);
   const focus = useStore((s) => s.focusCase);
-  const [mode, setMode] = useState<Mode>("hist");
+  // Default to gantt — user finds the left-to-right time progression more
+  // useful than the per-decade aggregation. Histogram is the alt view.
+  const [mode, setMode] = useState<Mode>("gantt");
 
   // ---------- Histogram option ----------
   const histOption = useMemo(() => {
@@ -215,7 +217,38 @@ export function TimelineView() {
             <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>${note}`;
         },
       },
-      grid: { left: 80, right: 20, top: 12, bottom: 32 },
+      // Bottom is generous so the dataZoom slider has room without
+      // overlapping the x-axis labels.
+      grid: { left: 80, right: 20, top: 12, bottom: 56 },
+      // Year scrollbar: starts at full range, drag handles to zoom into a
+      // narrower window, drag the body or scroll-wheel inside the chart to
+      // pan left/right.
+      dataZoom: [
+        {
+          type: "slider",
+          xAxisIndex: 0,
+          bottom: 6,
+          height: 18,
+          backgroundColor: "rgba(11, 16, 24, 0.6)",
+          fillerColor: "rgba(163, 230, 53, 0.18)",
+          borderColor: "#374151",
+          handleStyle: { color: "#a3e635", borderColor: "#a3e635" },
+          moveHandleStyle: { color: "#a3e635" },
+          textStyle: { color: "#9ca3af", fontSize: 9 },
+          dataBackground: {
+            lineStyle: { color: "#374151" },
+            areaStyle: { color: "rgba(163, 230, 53, 0.08)" },
+          },
+          start: 0,
+          end: 100,
+        },
+        {
+          type: "inside",
+          xAxisIndex: 0,
+          start: 0,
+          end: 100,
+        },
+      ],
       xAxis: {
         type: "value",
         min: xMin,
@@ -317,10 +350,10 @@ export function TimelineView() {
   };
 
   const empty = mode === "hist" ? !histOption : !ganttOption;
-  const hasYearFilter = yearRange !== null;
 
+  // Reset to canonical default state.
   const resetAll = () => {
-    setMode("hist");
+    setMode("gantt");
     setYearRange(null);
   };
 
@@ -346,18 +379,11 @@ export function TimelineView() {
           </ToolbarBtn>
         </div>
 
-        {/* Action buttons */}
+        {/* Reset */}
         <div className="flex gap-0.5 rounded-md border border-ink-700 bg-ink-900/90 p-0.5">
           <ToolbarBtn
-            disabled={!hasYearFilter}
-            onClick={() => setYearRange(null)}
-            title="清除年代篩選"
-          >
-            <FilterX className="h-4 w-4" />
-          </ToolbarBtn>
-          <ToolbarBtn
             onClick={resetAll}
-            title="重置視圖（回到預設長條圖、清除年代篩選）"
+            title="重置視圖（回到預設甘特圖、清除年代篩選）"
           >
             <RotateCcw className="h-4 w-4" />
           </ToolbarBtn>
