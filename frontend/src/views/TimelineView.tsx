@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
-import { BarChart3, BarChartHorizontal, RotateCcw } from "lucide-react";
+import { ArrowLeft, BarChart3, BarChartHorizontal, RotateCcw } from "lucide-react";
 import { useFilteredCases, useStore } from "../lib/store";
 import {
   CASE_TYPE_COLOR,
@@ -8,13 +8,16 @@ import {
   type CaseType,
 } from "../lib/types";
 
-// Two views over the same case-set, switchable via the top toolbar:
-//  - histogram (default): stacked-bar count by decade
-//  - gantt: case-type swimlanes with crimeYear → resolveYear bars
+// Three-mode timeline:
+//  - histogram: stacked bars by decade (alt view)
+//  - gantt: case-type swimlanes 1900→2026 with x-axis year scrubber
+//    (default, all cases visible at once)
+//  - drill-down: triggered by clicking a case-type label on the gantt
+//    y-axis. Shows every case of that type on its own row, sorted by
+//    crime year, with the case name printed next to the bar's end.
+//    Vertical scroll inside the panel when there are many cases.
 //
-// Pre-1900 cases are folded into a single bucket / clamped to 1900 so the
-// long sparse tail (1840s-1890s with ≤2 cases each) doesn't stretch the
-// x-axis on either chart.
+// Pre-1900 cases are bucketed (histogram) or clamped to 1900 (gantt).
 
 const ALL_CASE_TYPES: CaseType[] = [
   "murder",
@@ -33,6 +36,14 @@ const ALL_CASE_TYPES: CaseType[] = [
 
 const PRE_1900_LABEL = "1900年前";
 const GANTT_MIN_YEAR = 1900;
+// 1.5x the previous 300px chart height per user request
+const PANEL_CHART_HEIGHT = 450;
+// Drill-down: each case row this tall; chart grows + scrolls
+const DRILL_ROW_HEIGHT = 24;
+// Tag → readable label for inverse lookup on axis-label clicks
+const LABEL_TO_TYPE = new Map<string, CaseType>(
+  ALL_CASE_TYPES.map((t) => [CASE_TYPE_LABEL[t], t]),
+);
 
 type Mode = "hist" | "gantt";
 
@@ -41,9 +52,8 @@ export function TimelineView() {
   const yearRange = useStore((s) => s.yearRange);
   const setYearRange = useStore((s) => s.setYearRange);
   const focus = useStore((s) => s.focusCase);
-  // Default to gantt — user finds the left-to-right time progression more
-  // useful than the per-decade aggregation. Histogram is the alt view.
   const [mode, setMode] = useState<Mode>("gantt");
+  const [drilledType, setDrilledType] = useState<CaseType | null>(null);
 
   // ---------- Histogram option ----------
   const histOption = useMemo(() => {
@@ -85,8 +95,6 @@ export function TimelineView() {
       if (arr) arr[idx]++;
     }
 
-    // Decade-level filter highlighting. Pre-1900 bucket considered
-    // "in range" if the filter overlaps any year < 1900.
     const isInFilteredRange = (label: string) => {
       if (!yearRange) return false;
       if (label === PRE_1900_LABEL) return yearRange[0] < 1900;
@@ -154,8 +162,9 @@ export function TimelineView() {
     };
   }, [cases, yearRange]);
 
-  // ---------- Gantt option ----------
-  const ganttOption = useMemo(() => {
+  // ---------- Gantt overview (12 swimlanes, all types) ----------
+  const ganttOverviewOption = useMemo(() => {
+    if (drilledType) return null; // skip building when drilled
     const items = cases
       .filter((c) => typeof c.crimeYear === "number")
       .map((c) => {
@@ -164,8 +173,6 @@ export function TimelineView() {
           typeof c.resolveYear === "number" && c.resolveYear >= realStart
             ? c.resolveYear
             : realStart + 0.5;
-        // Clamp pre-1900 to GANTT_MIN_YEAR for display, keep actual values
-        // in tooltip.
         const start = Math.max(GANTT_MIN_YEAR, realStart);
         const end = Math.max(GANTT_MIN_YEAR + 0.5, realEnd);
         return {
@@ -217,12 +224,7 @@ export function TimelineView() {
             <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>${note}`;
         },
       },
-      // Bottom is generous so the dataZoom slider has room without
-      // overlapping the x-axis labels.
       grid: { left: 80, right: 20, top: 12, bottom: 56 },
-      // Year scrollbar: starts at full range, drag handles to zoom into a
-      // narrower window, drag the body or scroll-wheel inside the chart to
-      // pan left/right.
       dataZoom: [
         {
           type: "slider",
@@ -242,12 +244,7 @@ export function TimelineView() {
           start: 0,
           end: 100,
         },
-        {
-          type: "inside",
-          xAxisIndex: 0,
-          start: 0,
-          end: 100,
-        },
+        { type: "inside", xAxisIndex: 0, start: 0, end: 100 },
       ],
       xAxis: {
         type: "value",
@@ -272,6 +269,18 @@ export function TimelineView() {
           color: "#9ca3af",
           fontSize: 11,
           fontWeight: 600,
+          // Click a label → drill into that type. Hover hint underline.
+          triggerEvent: true,
+          formatter: (label: string) => `{clickable|${label}}`,
+          rich: {
+            clickable: {
+              color: "#9ca3af",
+              fontWeight: 600,
+              fontSize: 11,
+              padding: [2, 4],
+              borderRadius: 3,
+            },
+          },
         },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -313,12 +322,154 @@ export function TimelineView() {
         },
       ],
     };
-  }, [cases]);
+  }, [cases, drilledType]);
 
+  // ---------- Drill-down (single type, 1 row per case) ----------
+  const drillData = useMemo(() => {
+    if (!drilledType) return null;
+    const filtered = cases
+      .filter(
+        (c) =>
+          c.caseType === drilledType && typeof c.crimeYear === "number",
+      )
+      .sort((a, b) => (a.crimeYear ?? 0) - (b.crimeYear ?? 0));
+    return filtered;
+  }, [cases, drilledType]);
+
+  const drillOption = useMemo(() => {
+    if (!drilledType || !drillData || drillData.length === 0) return null;
+    const items = drillData.map((c, idx) => {
+      const realStart = c.crimeYear!;
+      const realEnd =
+        typeof c.resolveYear === "number" && c.resolveYear >= realStart
+          ? c.resolveYear
+          : realStart + 0.5;
+      const start = Math.max(GANTT_MIN_YEAR, realStart);
+      const end = Math.max(GANTT_MIN_YEAR + 0.5, realEnd);
+      return {
+        name: c.caseName,
+        value: [
+          idx, // y row
+          start,
+          end,
+          c.caseType,
+          c.id,
+          c.country ?? "?",
+          realStart,
+          realEnd,
+          c.caseName, // [8] for inline text rendering
+        ],
+        itemStyle: { color: CASE_TYPE_COLOR[c.caseType] },
+      };
+    });
+    const allYears = items.flatMap((d) => [
+      d.value[1] as number,
+      d.value[2] as number,
+    ]);
+    const maxYear = Math.max(...allYears);
+
+    return {
+      backgroundColor: "transparent",
+      tooltip: {
+        backgroundColor: "#0b1018",
+        borderColor: "#1f2937",
+        textStyle: { color: "#f3f4f6", fontSize: 12 },
+        formatter: (p: { data: { name: string; value: unknown[] } }) => {
+          const v = p.data.value;
+          const realStart = v[6] as number;
+          const realEnd = v[7] as number;
+          const span =
+            realEnd - realStart > 0.5
+              ? `${realStart}–${Math.floor(realEnd)}`
+              : `${realStart}`;
+          return `<div style="font-weight:700;color:#f3f4f6;">${escapeHtml(p.data.name)}</div>
+            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>`;
+        },
+      },
+      grid: { left: 24, right: 240, top: 8, bottom: 8 },
+      xAxis: {
+        type: "value",
+        min: GANTT_MIN_YEAR - 1,
+        max: Math.ceil(maxYear) + 2,
+        position: "top",
+        axisLabel: {
+          color: "#9ca3af",
+          fontSize: 10,
+          formatter: (v: number) =>
+            Math.round(v) === GANTT_MIN_YEAR
+              ? `≤${GANTT_MIN_YEAR}`
+              : Math.round(v).toString(),
+        },
+        axisLine: { show: false },
+        splitLine: { lineStyle: { color: "#1f2937" } },
+      },
+      yAxis: {
+        type: "category",
+        data: items.map((_, i) => `${i}`),
+        inverse: true,
+        show: false, // case names rendered inline next to each bar instead
+      },
+      series: [
+        {
+          type: "custom",
+          renderItem: (
+            _params: unknown,
+            api: {
+              value: (i: number) => number | string;
+              coord: (v: [number | string, number | string]) => [number, number];
+              size: (v: [number, number]) => [number, number];
+              style: (extra?: Record<string, unknown>) => Record<string, unknown>;
+            },
+          ) => {
+            const yIdx = api.value(0) as number;
+            const x0 = api.value(1) as number;
+            const x1 = api.value(2) as number;
+            const start = api.coord([x0, yIdx]);
+            const end = api.coord([x1, yIdx]);
+            const rowHeight = api.size([0, 1])[1];
+            const barHeight = Math.max(6, Math.min(14, rowHeight * 0.55));
+            const width = Math.max(2, end[0] - start[0]);
+            const caseName = String(api.value(8));
+            return {
+              type: "group",
+              children: [
+                {
+                  type: "rect",
+                  shape: {
+                    x: start[0],
+                    y: start[1] - barHeight / 2,
+                    width,
+                    height: barHeight,
+                  },
+                  style: api.style({ opacity: 0.85 }),
+                },
+                {
+                  type: "text",
+                  style: {
+                    x: end[0] + 8,
+                    y: start[1],
+                    text: caseName,
+                    fill: "#e5e7eb",
+                    font: '500 11px "Noto Sans TC", system-ui, sans-serif',
+                    textAlign: "left",
+                    textVerticalAlign: "middle",
+                  },
+                  silent: true,
+                },
+              ],
+            };
+          },
+          encode: { x: [1, 2], y: 0 },
+          data: items,
+        },
+      ],
+    };
+  }, [drilledType, drillData]);
+
+  // ---------- Event handlers ----------
   const handleHistEvents = {
     click: (params: { name?: string }) => {
       if (!params.name) return;
-      // Pre-1900 → range = [1800, 1899] (cover the bucket)
       if (params.name === PRE_1900_LABEL) {
         if (yearRange && yearRange[0] === 1800 && yearRange[1] === 1899) {
           setYearRange(null);
@@ -343,61 +494,140 @@ export function TimelineView() {
   };
 
   const handleGanttEvents = {
+    click: (p: {
+      componentType?: string;
+      targetType?: string;
+      value?: string;
+      data?: { value?: unknown[] };
+    }) => {
+      // y-axis label click → drill into that case type
+      if (
+        p.componentType === "yAxis" &&
+        p.targetType === "axisLabel" &&
+        typeof p.value === "string"
+      ) {
+        const t = LABEL_TO_TYPE.get(p.value);
+        if (t) setDrilledType(t);
+        return;
+      }
+      // bar click → focus case
+      const id = p.data?.value?.[4];
+      if (typeof id === "string") focus(id);
+    },
+  };
+
+  const handleDrillEvents = {
     click: (p: { data?: { value?: unknown[] } }) => {
       const id = p.data?.value?.[4];
       if (typeof id === "string") focus(id);
     },
   };
 
-  const empty = mode === "hist" ? !histOption : !ganttOption;
-
-  // Reset to canonical default state.
+  // ---------- Render ----------
   const resetAll = () => {
     setMode("gantt");
+    setDrilledType(null);
     setYearRange(null);
   };
 
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    if (drilledType) setDrilledType(null);
+  };
+
+  const empty =
+    drilledType
+      ? !drillOption
+      : mode === "hist"
+        ? !histOption
+        : !ganttOverviewOption;
+
+  // Drilled chart height = N cases × row height, scrollable.
+  const drilledChartHeight = drillData
+    ? Math.max(PANEL_CHART_HEIGHT, drillData.length * DRILL_ROW_HEIGHT + 30)
+    : PANEL_CHART_HEIGHT;
+
   return (
     <div>
-      {/* Toolbar — flow layout above the chart so it never overlaps data */}
-      <div className="flex items-center justify-end gap-2 border-b border-ink-700/60 px-3 py-1.5">
-        {/* Mode toggle */}
-        <div className="flex gap-0.5 rounded-md border border-ink-700 bg-ink-900/90 p-0.5">
-          <ToolbarBtn
-            active={mode === "hist"}
-            onClick={() => setMode("hist")}
-            title="長條圖（依年代統計案件數）"
-          >
-            <BarChart3 className="h-4 w-4" />
-          </ToolbarBtn>
-          <ToolbarBtn
-            active={mode === "gantt"}
-            onClick={() => setMode("gantt")}
-            title="甘特圖（每案件一條時間軸）"
-          >
-            <BarChartHorizontal className="h-4 w-4" />
-          </ToolbarBtn>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-2 border-b border-ink-700/60 px-3 py-1.5">
+        <div className="flex items-center gap-2">
+          {drilledType && (
+            <button
+              type="button"
+              onClick={() => setDrilledType(null)}
+              className="flex items-center gap-1.5 rounded-md border border-ink-700 bg-ink-900/90 px-2 py-1 text-xs text-gray-300 transition hover:border-accent-neon hover:text-accent-neon"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>返回</span>
+              <span
+                className="ml-1 rounded px-1 py-0.5 text-[10px] font-bold"
+                style={{
+                  backgroundColor: CASE_TYPE_COLOR[drilledType] + "33",
+                  color: CASE_TYPE_COLOR[drilledType],
+                }}
+              >
+                {CASE_TYPE_LABEL[drilledType]} · {drillData?.length ?? 0}
+              </span>
+            </button>
+          )}
         </div>
-
-        {/* Reset */}
-        <div className="flex gap-0.5 rounded-md border border-ink-700 bg-ink-900/90 p-0.5">
-          <ToolbarBtn
-            onClick={resetAll}
-            title="重置視圖（回到預設甘特圖、清除年代篩選）"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </ToolbarBtn>
+        <div className="flex gap-2">
+          {/* Mode toggle (disabled in drill) */}
+          <div className="flex gap-0.5 rounded-md border border-ink-700 bg-ink-900/90 p-0.5">
+            <ToolbarBtn
+              active={!drilledType && mode === "hist"}
+              onClick={() => switchMode("hist")}
+              title="長條圖（依年代統計案件數）"
+            >
+              <BarChart3 className="h-4 w-4" />
+            </ToolbarBtn>
+            <ToolbarBtn
+              active={!drilledType && mode === "gantt"}
+              onClick={() => switchMode("gantt")}
+              title="甘特圖（每案件一條時間軸）"
+            >
+              <BarChartHorizontal className="h-4 w-4" />
+            </ToolbarBtn>
+          </div>
+          <div className="flex gap-0.5 rounded-md border border-ink-700 bg-ink-900/90 p-0.5">
+            <ToolbarBtn
+              onClick={resetAll}
+              title="重置視圖（回到預設甘特圖、清除年代篩選）"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </ToolbarBtn>
+          </div>
         </div>
       </div>
 
       {empty ? (
-        <div className="flex h-[280px] items-center justify-center text-sm text-gray-500">
+        <div
+          className="flex items-center justify-center text-sm text-gray-500"
+          style={{ height: PANEL_CHART_HEIGHT }}
+        >
           該篩選下沒有可繪製的案發年份資料
         </div>
+      ) : drilledType ? (
+        // Drill-down: scrollable, chart height grows with case count
+        <div
+          className="overflow-y-auto"
+          style={{ maxHeight: PANEL_CHART_HEIGHT }}
+        >
+          <div style={{ height: drilledChartHeight }}>
+            <ReactECharts
+              option={drillOption!}
+              style={{ height: "100%", width: "100%" }}
+              opts={{ renderer: "canvas" }}
+              onEvents={handleDrillEvents}
+              notMerge
+            />
+          </div>
+        </div>
       ) : (
-        <div className="h-[300px]">
+        <div style={{ height: PANEL_CHART_HEIGHT }}>
           <ReactECharts
-            option={mode === "hist" ? histOption! : ganttOption!}
+            option={mode === "hist" ? histOption! : ganttOverviewOption!}
             style={{ height: "100%", width: "100%" }}
             opts={{ renderer: "canvas" }}
             onEvents={mode === "hist" ? handleHistEvents : handleGanttEvents}
