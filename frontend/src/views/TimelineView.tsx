@@ -248,21 +248,13 @@ export function TimelineView() {
         data: ALL_CASE_TYPES.map((t) => CASE_TYPE_LABEL[t]),
         inverse: true,
         axisLabel: {
-          color: "#9ca3af",
+          // Lime accent so labels read as clickable; triggerEvent makes
+          // them emit click events. Rich-text wrapper was interfering
+          // with params.value, so just keep the label plain.
+          color: "#a3e635",
           fontSize: 11,
           fontWeight: 600,
-          // Click a label → drill into that type. Hover hint underline.
           triggerEvent: true,
-          formatter: (label: string) => `{clickable|${label}}`,
-          rich: {
-            clickable: {
-              color: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 11,
-              padding: [2, 4],
-              borderRadius: 3,
-            },
-          },
         },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -486,20 +478,25 @@ export function TimelineView() {
     click: (p: {
       componentType?: string;
       targetType?: string;
-      value?: string;
+      value?: string | number;
+      name?: string;
       data?: { value?: unknown[] };
     }) => {
-      // y-axis label click → drill into that case type
-      if (
-        p.componentType === "yAxis" &&
-        p.targetType === "axisLabel" &&
-        typeof p.value === "string"
-      ) {
-        const t = LABEL_TO_TYPE.get(p.value);
-        if (t) setDrilledType(t);
-        return;
+      // Y-axis label click → drill. Be lenient about how ECharts surfaces
+      // the label value (could be `value`, `name`, or wrapped rich text).
+      if (p.componentType === "yAxis") {
+        let raw = String(p.value ?? p.name ?? "").trim();
+        // Strip rich-text wrapper just in case ({tag|content})
+        const richMatch = raw.match(/^\{[^|]+\|(.+)\}$/);
+        if (richMatch) raw = richMatch[1];
+        const t = LABEL_TO_TYPE.get(raw);
+        if (t) {
+          setDrilledType(t);
+          return;
+        }
       }
-      // bar click → focus case
+      // Bar click was disabled in overview (silent + emphasis disabled)
+      // but keep the focus path for the drill-down handler reuse.
       const id = p.data?.value?.[4];
       if (typeof id === "string") focus(id);
     },
