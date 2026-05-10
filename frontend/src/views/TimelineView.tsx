@@ -520,15 +520,17 @@ export function TimelineView() {
 
   // Belt-and-braces: also bind a chart-level click that catches axis-label
   // events even if the React onEvents prop misses them for some reason.
-  const onGanttChartReady = useCallback(
-    (chart: { on: (e: string, q: object | ((p: unknown) => void), h?: (p: unknown) => void) => void; off: (e: string) => void }) => {
-      chart.off("click");
-      chart.on("click", { componentType: "yAxis" }, (params: unknown) => {
-        tryDrillFromParams(params as { componentType?: string; value?: string | number; name?: string });
-      });
-    },
-    [tryDrillFromParams],
-  );
+  // Typed as any so we can use the (event, query, handler) overload without
+  // wrestling ECharts' overloaded signatures here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onGanttChartReady = useCallback((chart: any) => {
+    chart.off("click");
+    chart.on("click", { componentType: "yAxis" }, (params: unknown) => {
+      tryDrillFromParams(
+        params as { componentType?: string; value?: string | number; name?: string },
+      );
+    });
+  }, [tryDrillFromParams]);
 
   const handleDrillEvents = {
     click: (p: { data?: { value?: unknown[] } }) => {
