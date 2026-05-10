@@ -247,14 +247,15 @@ export function TimelineView() {
         type: "category",
         data: ALL_CASE_TYPES.map((t) => CASE_TYPE_LABEL[t]),
         inverse: true,
+        // CRITICAL: triggerEvent lives at the axis level, not under
+        // axisLabel. With it under axisLabel echarts silently ignores it
+        // and no click events fire for the labels. With it here, click
+        // events fire as { componentType: "yAxis", value: "<label>" }.
+        triggerEvent: true,
         axisLabel: {
-          // Lime accent so labels read as clickable; triggerEvent makes
-          // them emit click events. Rich-text wrapper was interfering
-          // with params.value, so just keep the label plain.
           color: "#a3e635",
           fontSize: 11,
           fontWeight: 600,
-          triggerEvent: true,
         },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -481,9 +482,6 @@ export function TimelineView() {
       value?: string | number;
       name?: string;
     }): boolean => {
-      // eslint-disable-next-line no-console
-      console.log("[Timeline gantt click]", p);
-
       // Several shapes the params can take depending on what was clicked
       const candidates: string[] = [];
       if (typeof p.value === "string") candidates.push(p.value);
