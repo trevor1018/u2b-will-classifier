@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { ArrowLeft, BarChart3, BarChartHorizontal, RotateCcw } from "lucide-react";
 import { useFilteredCases, useStore } from "../lib/store";
@@ -291,10 +291,9 @@ export function TimelineView() {
                 width,
                 height: barHeight,
               },
-              // silent: bar itself doesn't react to hover/click — only the
-              // y-axis labels do (drill-into-type). Keeps the overview as
-              // a static visualisation.
-              silent: true,
+              // Bar visuals don't take hover (tooltip already off,
+              // emphasis disabled). NOT setting silent because that was
+              // suspected of swallowing axis-label clicks too.
               style: api.style({ opacity: 0.75 }),
             };
           },
@@ -474,33 +473,62 @@ export function TimelineView() {
     },
   };
 
-  const handleGanttEvents = {
-    click: (p: {
+  // Inspect any click and route to drill if it looks like an axis label.
+  const tryDrillFromParams = useCallback(
+    (p: {
       componentType?: string;
       targetType?: string;
       value?: string | number;
       name?: string;
-      data?: { value?: unknown[] };
-    }) => {
-      // Y-axis label click → drill. Be lenient about how ECharts surfaces
-      // the label value (could be `value`, `name`, or wrapped rich text).
-      if (p.componentType === "yAxis") {
-        let raw = String(p.value ?? p.name ?? "").trim();
-        // Strip rich-text wrapper just in case ({tag|content})
-        const richMatch = raw.match(/^\{[^|]+\|(.+)\}$/);
-        if (richMatch) raw = richMatch[1];
-        const t = LABEL_TO_TYPE.get(raw);
+    }): boolean => {
+      // eslint-disable-next-line no-console
+      console.log("[Timeline gantt click]", p);
+
+      // Several shapes the params can take depending on what was clicked
+      const candidates: string[] = [];
+      if (typeof p.value === "string") candidates.push(p.value);
+      if (typeof p.name === "string") candidates.push(p.name);
+      for (const cand of candidates) {
+        const stripped = cand.replace(/^\{[^|]+\|(.+)\}$/, "$1").trim();
+        const t = LABEL_TO_TYPE.get(stripped);
         if (t) {
           setDrilledType(t);
-          return;
+          return true;
         }
       }
-      // Bar click was disabled in overview (silent + emphasis disabled)
-      // but keep the focus path for the drill-down handler reuse.
-      const id = p.data?.value?.[4];
-      if (typeof id === "string") focus(id);
+      return false;
     },
-  };
+    [],
+  );
+
+  const handleGanttEvents = useMemo(
+    () => ({
+      click: (p: {
+        componentType?: string;
+        targetType?: string;
+        value?: string | number;
+        name?: string;
+        data?: { value?: unknown[] };
+      }) => {
+        if (tryDrillFromParams(p)) return;
+        // Bar click — overview disables emphasis/tooltip but click can
+        // still fire on the rect. We don't focus from overview.
+      },
+    }),
+    [tryDrillFromParams],
+  );
+
+  // Belt-and-braces: also bind a chart-level click that catches axis-label
+  // events even if the React onEvents prop misses them for some reason.
+  const onGanttChartReady = useCallback(
+    (chart: { on: (e: string, q: object | ((p: unknown) => void), h?: (p: unknown) => void) => void; off: (e: string) => void }) => {
+      chart.off("click");
+      chart.on("click", { componentType: "yAxis" }, (params: unknown) => {
+        tryDrillFromParams(params as { componentType?: string; value?: string | number; name?: string });
+      });
+    },
+    [tryDrillFromParams],
+  );
 
   const handleDrillEvents = {
     click: (p: { data?: { value?: unknown[] } }) => {
@@ -617,6 +645,7 @@ export function TimelineView() {
             style={{ height: "100%", width: "100%" }}
             opts={{ renderer: "canvas" }}
             onEvents={mode === "hist" ? handleHistEvents : handleGanttEvents}
+            onChartReady={mode === "gantt" ? onGanttChartReady : undefined}
             notMerge
           />
         </div>
