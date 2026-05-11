@@ -202,10 +202,31 @@ export function TimelineView() {
 
     return {
       backgroundColor: "transparent",
-      // No tooltip on the overview — the dense 12-lane chart is for
-      // pattern-spotting, not per-case inspection. Drill into a type
-      // (click the y-axis label) to enable per-case hover.
-      tooltip: { show: false },
+      // Tooltip on. When the user zooms in via the dataZoom slider the
+      // bars spread out and hovering individual ones becomes useful for
+      // disambiguating overlaps that are squashed at full zoom.
+      tooltip: {
+        backgroundColor: "#0b1018",
+        borderColor: "#1f2937",
+        textStyle: { color: "#f3f4f6", fontSize: 12 },
+        formatter: (p: { data: { name: string; value: unknown[] } }) => {
+          const v = p.data.value;
+          const realStart = v[6] as number;
+          const realEnd = v[7] as number;
+          const span =
+            realEnd - realStart > 0.5
+              ? `${realStart}–${Math.floor(realEnd)}`
+              : `${realStart}`;
+          const t = v[3] as CaseType;
+          const note =
+            realStart < GANTT_MIN_YEAR
+              ? `<div style="font-size:10px;color:#fbbf24;">＊1900年前案件，已壓在左軸</div>`
+              : "";
+          return `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">${CASE_TYPE_LABEL[t]}</div>
+            <div style="font-weight:700;color:#f3f4f6;">${escapeHtml(p.data.name)}</div>
+            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>${note}`;
+        },
+      },
       grid: { left: 80, right: 20, top: 12, bottom: 56 },
       dataZoom: [
         {
@@ -264,9 +285,6 @@ export function TimelineView() {
       series: [
         {
           type: "custom",
-          // Disable hover highlight on overview bars (matches "no hover"
-          // in this mode — pattern-only, not per-case interaction).
-          emphasis: { disabled: true },
           renderItem: (
             _params: unknown,
             api: {
@@ -292,9 +310,6 @@ export function TimelineView() {
                 width,
                 height: barHeight,
               },
-              // Bar visuals don't take hover (tooltip already off,
-              // emphasis disabled). NOT setting silent because that was
-              // suspected of swallowing axis-label clicks too.
               style: api.style({ opacity: 0.75 }),
             };
           },
@@ -367,7 +382,41 @@ export function TimelineView() {
             <div style="font-size:11px;color:#9ca3af;">${escapeHtml(v[5] as string)} · ${span}</div>`;
         },
       },
-      grid: { left: 24, right: 240, top: 8, bottom: 8 },
+      // top:28 leaves room for the x-axis sitting at the top (so it stays
+      // visible while the body scrolls). right:240 reserves space for the
+      // inline case-name text. bottom:8 keeps things tight.
+      grid: { left: 32, right: 240, top: 28, bottom: 8 },
+      // Y-axis dataZoom: scroll case rows instead of overflow-y on the
+      // outer div. This keeps the x-axis at the top frozen while the body
+      // scrolls — matches typical Gantt UX. mousewheel scrolls; the
+      // right-edge slider is the explicit scroll handle.
+      dataZoom: [
+        {
+          type: "inside",
+          yAxisIndex: 0,
+          startValue: 0,
+          endValue: Math.min(items.length - 1, 16),
+          zoomOnMouseWheel: false,
+          moveOnMouseWheel: true,
+          moveOnMouseMove: false,
+        },
+        {
+          type: "slider",
+          yAxisIndex: 0,
+          right: 4,
+          width: 10,
+          showDetail: false,
+          showDataShadow: false,
+          backgroundColor: "rgba(11, 16, 24, 0.6)",
+          fillerColor: "rgba(163, 230, 53, 0.18)",
+          borderColor: "#374151",
+          handleStyle: { color: "#a3e635", borderColor: "#a3e635" },
+          moveHandleStyle: { color: "#a3e635" },
+          startValue: 0,
+          endValue: Math.min(items.length - 1, 16),
+          brushSelect: false,
+        },
+      ],
       xAxis: {
         type: "value",
         min: GANTT_MIN_YEAR - 1,
@@ -556,10 +605,10 @@ export function TimelineView() {
         ? !histOption
         : !ganttOverviewOption;
 
-  // Drilled chart height = N cases × row height, scrollable.
-  const drilledChartHeight = drillData
-    ? Math.max(PANEL_CHART_HEIGHT, drillData.length * DRILL_ROW_HEIGHT + 30)
-    : PANEL_CHART_HEIGHT;
+  // (Previously we expanded the chart height beyond the panel and let an
+  // outer div scroll, but that scrolled the x-axis off-screen with the
+  // bars. Now we keep the chart at PANEL_CHART_HEIGHT and rely on the
+  // yAxis dataZoom inside the option to scroll rows.)
 
   return (
     <div>
@@ -623,20 +672,17 @@ export function TimelineView() {
           該篩選下沒有可繪製的案發年份資料
         </div>
       ) : drilledType ? (
-        // Drill-down: scrollable, chart height grows with case count
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: PANEL_CHART_HEIGHT }}
-        >
-          <div style={{ height: drilledChartHeight }}>
-            <ReactECharts
-              option={drillOption!}
-              style={{ height: "100%", width: "100%" }}
-              opts={{ renderer: "canvas" }}
-              onEvents={handleDrillEvents}
-              notMerge
-            />
-          </div>
+        // Drill-down: fixed-height chart. Vertical scrolling is handled
+        // by the chart's own yAxis dataZoom — keeps the x-axis (year) at
+        // the top permanently visible.
+        <div style={{ height: PANEL_CHART_HEIGHT }}>
+          <ReactECharts
+            option={drillOption!}
+            style={{ height: "100%", width: "100%" }}
+            opts={{ renderer: "canvas" }}
+            onEvents={handleDrillEvents}
+            notMerge
+          />
         </div>
       ) : (
         <div style={{ height: PANEL_CHART_HEIGHT }}>
