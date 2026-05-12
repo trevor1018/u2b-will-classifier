@@ -85,7 +85,14 @@ def fetch_playlist_video_ids(client: httpx.Client, playlist_id: str) -> list[str
         }
         if page_token:
             params["pageToken"] = page_token
-        data = yt_get(client, "playlistItems", params)
+        try:
+            data = yt_get(client, "playlistItems", params)
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                # Playlist doesn't exist (e.g. channel has no members-only
+                # content) — return whatever we got so far.
+                return ids
+            raise
         for item in data.get("items", []):
             vid = item.get("contentDetails", {}).get("videoId")
             if vid:
@@ -94,6 +101,17 @@ def fetch_playlist_video_ids(client: httpx.Client, playlist_id: str) -> list[str
         if not page_token:
             break
     return ids
+
+
+def member_playlist_id_for(channel_id: str) -> str | None:
+    """YouTube convention: a channel's members-only uploads playlist ID is
+    the channel ID with the leading 'UC' replaced by 'UUMO'.
+
+    e.g. UCOyshL6rKK1GqwoEfy_ehBg -> UUMOOyshL6rKK1GqwoEfy_ehBg
+    """
+    if not channel_id.startswith("UC"):
+        return None
+    return "UUMO" + channel_id[2:]
 
 
 def chunked(seq: list[str], n: int) -> Iterable[list[str]]:
@@ -1055,7 +1073,7 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
                 "lon": lon,
                 "caseType": case_type,
                 "status": normalize_status(cl.get("status")),
-                "memberOnly": False,  # API does not directly expose this
+                "memberOnly": bool(v.get("_isMember")),
                 "tags": cl.get("tags") or [],
                 "milestones": [],
                 # Pass through optional multi-pin list for compilation /
@@ -1159,9 +1177,26 @@ def main() -> int:
         with httpx.Client() as client:
             uploads = fetch_uploads_playlist_id(client, YT_CHANNEL_ID)
             print(f"  uploads playlist: {uploads}")
-            ids = fetch_playlist_video_ids(client, uploads)
-            print(f"  found {len(ids)} videos")
-            videos = fetch_video_details(client, ids)
+            public_ids = fetch_playlist_video_ids(client, uploads)
+            print(f"  public videos: {len(public_ids)}")
+
+            # Try the members-only uploads playlist too. Titles/snippets are
+            # publicly readable via the API even for non-members; only the
+            # actual video stream is gated. viewCount/likeCount come back
+            # blank for member-gated videos — we accept that.
+            member_pl = member_playlist_id_for(YT_CHANNEL_ID)
+            member_ids: list[str] = []
+            if member_pl:
+                print(f"  member playlist: {member_pl}")
+                member_ids = fetch_playlist_video_ids(client, member_pl)
+                print(f"  member videos:  {len(member_ids)}")
+
+            all_ids = public_ids + member_ids
+            member_id_set = set(member_ids)
+            videos = fetch_video_details(client, all_ids)
+            # Tag member videos so build_payload can set memberOnly=True
+            for v in videos:
+                v["_isMember"] = v["id"] in member_id_set
         RAW_CACHE.write_text(json.dumps(videos, ensure_ascii=False, indent=2), encoding="utf-8")
 
     if args.limit > 0:

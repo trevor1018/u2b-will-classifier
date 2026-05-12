@@ -212,19 +212,30 @@ export function MapView() {
 
           const pos = displayCoords.get(p.key) ?? [p.lat, p.lon];
           const color = CASE_TYPE_COLOR[c.caseType];
-          const radius = 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
+          // Members-only videos don't report viewCount (membership-gated),
+          // so the usual log10(views) radius would shrink them to a
+          // sub-pixel dot. Give them a fixed mid-size and render hollow
+          // (no fill, dashed stroke) so they read as "locked / different"
+          // at a glance.
+          const radius = c.memberOnly
+            ? 4
+            : 1.5 + Math.log10(Math.max(1, c.viewCount)) * 0.8;
           const m = L.circleMarker(pos, {
             radius,
             color,
             fillColor: color,
-            fillOpacity: 0.6,
-            weight: 1,
+            fillOpacity: c.memberOnly ? 0 : 0.6,
+            weight: c.memberOnly ? 1.5 : 1,
+            dashArray: c.memberOnly ? "2,2" : undefined,
           });
           const tooltipCity = p.city ?? c.city ?? "?";
+          const memberBadge = c.memberOnly
+            ? `<span style="margin-left:6px;padding:1px 5px;border-radius:3px;background:rgba(251,191,36,0.18);color:#fbbf24;font-size:10px;">🔒 會員</span>`
+            : "";
           m.bindTooltip(
             () =>
               `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
-                  ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}
+                  ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}${memberBadge}
                 </div>
                 <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
                 <div style="font-size:11px;color:#9ca3af;">${escapeHtml(tooltipCity)} · ${c.crimeYear ?? "?"}</div>`,
