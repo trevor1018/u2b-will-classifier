@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-12T14:00:37.986114+00:00",
+  "generatedAt": "2026-05-12T14:03:20.265639+00:00",
   "source": "youtube-api",
   "channel": {
     "id": "UCOyshL6rKK1GqwoEfy_ehBg",
@@ -11093,9 +11093,9 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "英國",
-      "city": "德比郡普雷斯頓 (Preston, Derbyshire)",
-      "lat": 53.0985,
-      "lon": -1.3745,
+      "city": "德比郡 Eastmoor (峰區國家公園東緣)",
+      "lat": 53.24,
+      "lon": -1.39,
       "caseType": "murder",
       "status": "unknown",
       "memberOnly": true,
