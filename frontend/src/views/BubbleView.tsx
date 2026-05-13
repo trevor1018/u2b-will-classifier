@@ -13,6 +13,12 @@ export function BubbleView() {
       disaster: [], mystery: [], kidnap: [], curio: [], other: [],
     };
     for (const c of cases) {
+      // Member-gated videos report viewCount=0. A log-scale Y axis cannot
+      // plot 0 (log(0) is undefined) and including any 0-valued points
+      // makes ECharts give up auto-ranging — empty chart. Skip them: this
+      // bubble chart is about audience engagement, and member videos
+      // simply don`t expose engagement.
+      if (!c.viewCount || c.viewCount <= 0) continue;
       const t = new Date(c.publishedAt).getTime();
       const data: [number, number, number, string, string] = [
         t,
