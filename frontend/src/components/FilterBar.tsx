@@ -33,6 +33,14 @@ export function FilterBar() {
       types.add(c.caseType);
       stat.add(c.status);
       if (c.country) ctry.add(c.country);
+      // Multi-country compilation: each point can have its own country.
+      // Surface them all in the country chip list so the user can filter
+      // to any country the case visits.
+      if (c.points) {
+        for (const p of c.points) {
+          if (p.country) ctry.add(p.country);
+        }
+      }
       if (c.crimeYear) {
         if (c.crimeYear < minY) minY = c.crimeYear;
         if (c.crimeYear > maxY) maxY = c.crimeYear;

@@ -675,7 +675,7 @@ def load_classification_cache() -> dict[str, dict[str, Any]]:
         classified_fields = (
             "caseName", "country", "city", "lat", "lon",
             "crimeYear", "resolveYear", "caseType", "status", "tags",
-            "points",  # multi-pin list for compilation cases
+            "points",  # multi-pin list (optionally with per-point country)
         )
         for c in prev.get("cases", []):
             vid = c.get("id")

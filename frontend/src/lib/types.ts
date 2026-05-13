@@ -26,6 +26,12 @@ export type CaseType =
 export interface CasePoint {
   lat: number;
   lon: number;
+  /** Country this specific point sits in. For multi-country compilations
+   *  (e.g. a video that covers stories in both India and the US), each
+   *  point carries its own country so the case shows up under every
+   *  relevant country filter. Falls back to the parent case's country
+   *  when omitted. */
+  country?: string;
   city?: string;
   /** Optional label shown in tooltip (e.g. route description) */
   label?: string;

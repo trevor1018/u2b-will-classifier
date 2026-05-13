@@ -84,7 +84,13 @@ export function applyFilters(state: FilterState): CaseRecord[] {
   return cases.filter((c) => {
     if (caseTypes.size > 0 && !caseTypes.has(c.caseType)) return false;
     if (statuses.size > 0 && !statuses.has(c.status)) return false;
-    if (country && c.country !== country) return false;
+    if (country) {
+      // A case matches the country filter if its primary country matches
+      // OR any of its points sits in that country (compilation case).
+      const primary = c.country === country;
+      const inPoints = c.points?.some((p) => p.country === country) ?? false;
+      if (!primary && !inPoints) return false;
+    }
     if (yearRange && c.crimeYear) {
       if (c.crimeYear < yearRange[0] || c.crimeYear > yearRange[1]) return false;
     }
