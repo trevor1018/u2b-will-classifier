@@ -1,0 +1,1051 @@
+Total cases: 686
+  no crimeYear:              222
+  solved but no resolveYear: 34
+
+=== no-crimeYear by country (top 12) ===
+   53  美國
+   46  日本
+   18  香港
+   15  英國
+   14  韓國
+    9  澳洲
+    7  加拿大
+    6  俄羅斯
+    5  法國
+    4  西班牙
+    4  台灣
+    3  泰國
+
+=== quick wins: title contains a year (0 件) ===
+These could be batch-fixed by a regex pass over titles.
+
+
+
+=== Missing crimeYear (222 件) ===
+
+   [2026-04-07] DBqUi4JxFyk  (韓國 / 首爾)
+   地下室、屋塔房、廁所，當埋藏多年的祕密被揭開……韓國水泥藏屍案三則
+   https://youtu.be/DBqUi4JxFyk
+
+🔒 [2026-04-02] T-Bmtg4OAtA  (瑞士 / 賓寧根)
+   瑞士名模的光鮮人生，落幕時竟無全屍，選美小姐碎屍案 | X調查會員
+   https://youtu.be/T-Bmtg4OAtA
+
+   [2026-03-20] UVfNb3pA8jM  (日本 / 東京新宿區)
+   女主播街上直播時遇襲，千名網友在線目睹這一刻，東京「最上愛」事件
+   https://youtu.be/UVfNb3pA8jM
+
+   [2026-03-06] _n27sNnBsGg  (日本 / 滋賀縣長濱市)
+   白天在法院工作，晚上守著冰櫃，一封絕筆信揭開謎團，滋賀縣冰櫃藏屍案
+   https://youtu.be/_n27sNnBsGg
+
+🔒 [2026-02-27] QIa2xA76sZg  (法國 / 奧爾沃特)
+   法國奧爾沃特一家四口案 | X調查會員
+   https://youtu.be/QIa2xA76sZg
+
+   [2026-02-27] wYF7CCJ5EOk  (紐西蘭 / 奧克蘭)
+   豪宅無破壞痕跡，她卻被裝進行李箱，三男子各執一詞，最終真相被揭開 ｜ 新西蘭女華商案
+   https://youtu.be/wYF7CCJ5EOk
+
+🔒 [2026-02-09] igZHm5wQlHg  (伊朗 / 德黑蘭)
+   波斯公主木乃伊之謎 | X調查會員
+   https://youtu.be/igZHm5wQlHg
+
+   [2026-02-06] sDSQAdK2bRU  (澳洲 / 墨爾本)
+   墨爾本芭蕾少女在路口失蹤，找尋多日無果，一通電話成破案關鍵
+   https://youtu.be/sDSQAdK2bRU
+
+🔒 [2026-02-06] CWiEPF7rg1c  (巴西 / 瓜魯柳斯)
+   瓜魯柳斯雙生惡魔 | X調查會員
+   https://youtu.be/CWiEPF7rg1c
+
+   [2026-02-03] SfroxAyWXcc  (日本 / 豐明市)
+   與「名古屋西區主婦事件」齊名，平成著名懸案之一，豐明市母子四人事件
+   https://youtu.be/SfroxAyWXcc
+
+🔒 [2026-01-23] sic7u-CX5Ow  (日本 / 佐賀縣)
+   太宰府女帝事件 | X調查會員
+   https://youtu.be/sic7u-CX5Ow
+
+   [2026-01-23] kQQTlFZIXFA  (韓國 / 釜山)
+   兩名婦女接連出事，一枚「女鞋印」牽出真相，釜山地板藏屍案
+   https://youtu.be/kQQTlFZIXFA
+
+🔒 [2026-01-09] WPnqmLvau3k  (韓國 / 首爾論峴洞)
+   首爾論峴洞考試院殺人事件 | X調查會員
+   https://youtu.be/WPnqmLvau3k
+
+   [2026-01-09] PG9ZryU9AOc  (寮國 / 萬榮)
+   挪威女子遇上日本浪子，是獲得幸福，還是踏入地獄？老撾萬榮瑜伽女事件
+   https://youtu.be/PG9ZryU9AOc
+
+   [2026-01-06] FnlMC9MQDT4  (韓國 / 釜山市水營區廣安洞)
+   釜山母女在家遭遇不測，兒子卻毫髮無傷，最終真相被揭開
+   https://youtu.be/FnlMC9MQDT4
+
+🔒 [2025-12-31] 7eM3tAtecmE  (俄羅斯 / 克拉斯諾達爾)
+   克拉斯諾達爾食人族 | X調查會員
+   https://youtu.be/7eM3tAtecmE
+
+🔒 [2025-12-19] wu3raeUUrHA  (日本 / 東京都新宿區)
+   不死鳥刺殺事件 | X調查會員
+   https://youtu.be/wu3raeUUrHA
+
+   [2025-12-09] UNLFFQRpbdE  (美國 / 邁阿密)
+   「傳奇偵探」布倫南智破謎案，敏銳察覺監控線索千里追凶，邁阿密機場酒店案
+   https://youtu.be/UNLFFQRpbdE
+
+🔒 [2025-11-28] W59N2bsH-Nk  (日本 / 神戶)
+   神戶一家六口事件 | X調查會員
+   https://youtu.be/W59N2bsH-Nk
+
+   [2025-11-28] 1HNay8fXfDE  (韓國 / 昌原)
+   公寓密室內發現一對母女，牆上貼滿奇怪畫作，韓國昌原母女事件
+   https://youtu.be/1HNay8fXfDE
+
+🔒 [2025-11-21] l7oOjfQNciM  (美國 / 紐黑文)
+   紐黑文蔣凱文案 | X調查會員
+   https://youtu.be/l7oOjfQNciM
+
+   [2025-11-14] 7ZPjjbc7VSw  (美國 / 博蒙特)
+   最柯南的一集，私家偵探聯手警方巧破密室奇案，348號密室事件
+   https://youtu.be/7ZPjjbc7VSw
+
+🔒 [2025-11-07] 1sIXcdhVs_U  (俄羅斯 / 不明)
+   俄羅斯學院狂人 | X調查會員
+   https://youtu.be/1sIXcdhVs_U
+
+🔒 [2025-10-31] 2_25umHPFVg  (香港 / 香港)
+   香港和興大廈情殺案 | X調查會員
+   https://youtu.be/2_25umHPFVg
+
+🔒 [2025-10-17] Ht2XIaqrA1I  (匈牙利 / 辛科塔)
+   匈牙利新科塔怪物 | X調查會員
+   https://youtu.be/Ht2XIaqrA1I
+
+   [2025-10-17] uj71ePK1gr4  (印尼 / 雅加達)
+   又見柯南情節，冰咖啡里暗藏玄機，好閨蜜走向決裂，印尼冰咖啡事件
+   https://youtu.be/uj71ePK1gr4
+
+🔒 [2025-10-11] TFB3CRW_gYQ  (日本 / 姬路市)
+   姬路监禁杀⼈事件 | X调查会员
+   https://youtu.be/TFB3CRW_gYQ
+
+   [2025-10-07] 4tkFw84JLFg  (西班牙 / 阿頌塔)
+   華裔養女與精英父母，西班牙阿頌塔案背後的家庭真相
+   https://youtu.be/4tkFw84JLFg
+
+   [2025-10-03] ZYTNb5ffhZw  (英國 / Aberkenfig)
+   分手花季少女赴約引發悲劇，原因竟是為了「一份免費早餐」的賭注？
+   https://youtu.be/ZYTNb5ffhZw
+
+   [2025-09-30] YJHMRoqt1N0  (俄羅斯 / 聖彼得堡)
+   她愛上年長40歲的教授，而對方有著深深的拿破侖情結，這段愛戀的結局將如何？
+   https://youtu.be/YJHMRoqt1N0
+
+🔒 [2025-09-30] wVyYd4BX3wo  (香港 / 香港)
+   香港魔警徐步⾼ | X調查會員
+   https://youtu.be/wVyYd4BX3wo
+
+   [2025-09-23] YsDHxzjPogE  (澳洲 / 北艾坪（North Epping）)
+   一夜之間五人離世，澳洲華人家庭的夢魘，林家滅門案
+   https://youtu.be/YsDHxzjPogE
+
+   [2025-09-19] UW995MRkYB4  (美國 / 奧本)
+   華裔房東和留學生因租房引發矛盾，同胞為何反目成仇？華裔房東夫婦案
+   https://youtu.be/UW995MRkYB4
+
+🔒 [2025-09-12] uB7Wt_C396w  (法國 / 巴黎)
+   凱爾的幽靈 | X調查會員
+   https://youtu.be/uB7Wt_C396w
+
+   [2025-09-02] ZENRknr_SXM  (泰國 / 谷谷村)
+   帥氣姨夫被疑作案，後來卻變成萬人追捧的網紅，背後的真相是什麼？ | 泰國谷谷村案
+   https://youtu.be/ZENRknr_SXM
+
+🔒 [2025-08-22] AyuwTh6qceU  (香港 / 秀茂坪)
+   秀茂坪童黨燒⼫案 | X調查會員
+   https://youtu.be/AyuwTh6qceU
+
+   [2025-08-22] yDAsONrTJRA  (日本 / 東京)
+   老頭冒充皇族舉辦婚宴，結果連歌星都被騙？日本史上最荒誕的詐騙案
+   https://youtu.be/yDAsONrTJRA
+
+🔒 [2025-08-07] aJNLidYG_e0  (香港 / 荃灣)
+   電影《爸爸》原型案件：香港荃灣弒母殺妹案 | X調查會員
+   https://youtu.be/aJNLidYG_e0
+
+🔒 [2025-08-01] 5RvK3H9Zuog  (澳洲 / 立灣)
+   悉尼娃娃臉殺手 | X調查會員
+   https://youtu.be/5RvK3H9Zuog
+
+   [2025-07-25] SCA37IqxCA0  (香港 / 香港)
+   月台驚現神祕身影，列車駛過她卻憑空消失？港鐵都市傳說五則
+   https://youtu.be/SCA37IqxCA0
+
+   [2025-07-22] S_n-c9BcWnc  (韓國 / 海雲台區)
+   釜山公寓墜樓案，當愛變成噩夢
+   https://youtu.be/S_n-c9BcWnc
+
+   [2025-07-18] Z-v4_q3eZDg  (冰島 / 冰島)
+   5度冰水泡6小時？他做到了！冰島「海豹人」求生奇跡
+   https://youtu.be/Z-v4_q3eZDg
+
+   [2025-07-15] H83zCGlIeGQ  (愛爾蘭 / 利默里克郡)
+   愛爾蘭牧場下的祕密，離奇消失的月光先生
+   https://youtu.be/H83zCGlIeGQ
+
+   [2025-07-11] 6O5dsgeTj_w  (中國 / 鹤壁市)
+   3歲男童墜入15米深井，14歲少年捨身營救，他能成功嗎？
+   https://youtu.be/6O5dsgeTj_w
+
+   [2025-07-08] 2hA97kRPsjg  (日本 / 長野縣)
+   柯南經典情節成真？丈夫在亡妻祭日露出詭笑，精英政客的雙面人生
+   https://youtu.be/2hA97kRPsjg
+
+   [2025-07-01] jJt3g0r3eVc  (日本 / 鈴鹿市)
+   當兒子同學成了「小丈夫」，五婚家庭畸戀，鈴鹿年下丈夫事件
+   https://youtu.be/jJt3g0r3eVc
+
+🔒 [2025-06-28] En4v0YRQrAc  (香港 / 元朗牛潭尾)
+   元朗牛潭尾情殺案 | X調查會員
+   https://youtu.be/En4v0YRQrAc
+
+   [2025-06-27] -X7udZmYXlM  (中國 / 上海)
+   「館長」路過兩次都沒發現！上海龍柱：一個流傳30年的都市傳說
+   https://youtu.be/-X7udZmYXlM
+
+   [2025-06-24] 2xRsZqqkdQs  (法國 / 大博爾南)
+   法國離奇木屋滅門案：一家五口人間蒸發，嫉妒與謊言交織的真相
+   https://youtu.be/2xRsZqqkdQs
+
+🔒 [2025-06-20] fLIww5AnPDQ  (俄羅斯 / 安加爾斯克)
+   俄羅斯狼人殺手 | X調查會員
+   https://youtu.be/fLIww5AnPDQ
+
+   [2025-06-20] 4fDE2xSEvn8  (美國 / 阿拉巴馬州)
+   她為愛衝破牢籠？獄警協助重犯越獄全紀錄
+   https://youtu.be/4fDE2xSEvn8
+
+   [2025-06-17] Db_qo8Oh63I  (日本 / 大阪市北区天神橋4丁目)
+   大阪卡拉OK酒吧女店主遇害：她為何命喪自家酒吧？
+   https://youtu.be/Db_qo8Oh63I
+
+🔒 [2025-06-14] ndQ7GADOv0M  (日本 / 東京都練馬區)
+   中村橋警察被害事件｜X調查會員
+   https://youtu.be/ndQ7GADOv0M
+
+   [2025-06-06] oEZx1e7A0qk  (日本 / 東京)
+   貞子之母原型，揭祕日本「千里眼」的傳奇命運
+   https://youtu.be/oEZx1e7A0qk
+
+🔒 [2025-05-30] tVqbQAIa8yk  (香港 / 香港)
+   香港電梯密室殺人案 | X調查會員
+   https://youtu.be/tVqbQAIa8yk
+
+   [2025-05-30] bIlubyboSnM  (俄羅斯 / 鄂霍次克海)
+   67天海上漂流，鄂霍次克海的絕望與重生
+   https://youtu.be/bIlubyboSnM
+
+   [2025-05-27] qr1vozP-nOk  (荷蘭 / 埃因霍溫)
+   荷蘭妮可謀殺案
+   https://youtu.be/qr1vozP-nOk
+
+   [2025-05-23] ie4Hg72C84o  (巴西 / 馬托格羅索州)
+   兩人潛入杜杜潟湖洞穴深處，一場出乎意料的潛水迷途
+   https://youtu.be/ie4Hg72C84o
+
+   [2025-05-16] 5-UWq8JrglU  (澳洲 / 澳洲南部)
+   八人一起洞潛，四人偷偷離隊，澳州竪井洞潛事件
+   https://youtu.be/5-UWq8JrglU
+
+   [2025-05-09] SoJPbYu0qxM  (日本 / 埼玉)
+   日本埼玉路面塌陷事件
+   https://youtu.be/SoJPbYu0qxM
+
+🔒 [2025-04-30] iwJeV3neZVA  (韓國 / 舒川郡)
+   舒川連續殺⼈事件 | X調查會員
+   https://youtu.be/iwJeV3neZVA
+
+   [2025-04-25] FLe4HzM0mHs  (英國 / 蘇格蘭東部)
+   蘇格蘭亨廷頓油田潛水事件，海底極限救援最終上演奇跡
+   https://youtu.be/FLe4HzM0mHs
+
+   [2025-04-22] ZO5OhYzM1Zo  (日本 / 舞鶴市)
+   小杉美穗事件 | X調查
+   https://youtu.be/ZO5OhYzM1Zo
+
+   [2025-04-18] GeYcRKc2t5k  (西班牙 / 巴拉角)
+   四人挑戰水下洞穴，兩人進入未知區域，西班牙阿克茨洞潛水故事
+   https://youtu.be/GeYcRKc2t5k
+
+🔒 [2025-04-18] VHbdFcw00pI  (香港 / 元朗)
+   元朗膠桶⽔泥藏⼫案 | X調查會員
+   https://youtu.be/VHbdFcw00pI
+
+   [2025-04-15] eHH9X-9T-pY  (韓國 / 京畿道)
+   韓國李恩海事件 | X調查
+   https://youtu.be/eHH9X-9T-pY
+
+🔒 [2025-04-03] doSgRmrSsPU  (香港 / 香港荃灣)
+   香港荃威花園空姐⾐櫃藏⼫案 | X調查會員
+   https://youtu.be/doSgRmrSsPU
+
+   [2025-04-03] EDi-XrYlMjI  (西班牙 / 東南部)
+   歐洲已知最長水下洞穴之一，西班牙水之洞潛水事故
+   https://youtu.be/EDi-XrYlMjI
+
+   [2025-04-01] POpJJKgY6Wk  (日本 / 東京都八王子市下柚木)
+   大阪岡田里香事件 | X調查
+   https://youtu.be/POpJJKgY6Wk
+
+   [2025-03-28] pRDmGb0HCKQ  (美國 / 夏威夷)
+   小伙探祕世上最可怕的樓梯之一，結果至今下落不明，夏威夷海庫階梯之謎
+   https://youtu.be/pRDmGb0HCKQ
+
+🔒 [2025-03-14] fR8fRRXuntk  (日本 / 岡山市)
+   岡⼭兵庫⼩學⽣殺害事件 | X調查會員
+   https://youtu.be/fR8fRRXuntk
+
+   [2025-03-11] xk_pSTB-9cY  (愛爾蘭 / 三塔角)
+   愛爾蘭與法國共同關注的世紀之案，愛爾蘭蘇菲度假屋謎案 | X調查
+   https://youtu.be/xk_pSTB-9cY
+
+🔒 [2025-02-28] --vWXPXtAgM  (香港 / 坪輋)
+   香港坪輋滅門慘案 | X調查會員
+   https://youtu.be/--vWXPXtAgM
+
+🔒 [2025-02-14] iG70zLNsGFw  (香港 / 香港)
+   香港鳳姐連環劫殺案 | X調查會員
+   https://youtu.be/iG70zLNsGFw
+
+   [2025-01-28] O2uOGRtjf-U  (美國 / 紐約曼哈頓上東城)
+   騙走美國富豪8000萬美元，偽畫被當作大師真跡，華人偽畫大師錢培琛 | X調查
+   https://youtu.be/O2uOGRtjf-U
+
+   [2025-01-21] OUmFmt9X9rc  (海上 / 三條郵輪航線 (合集))
+   從郵輪上意外墜海，還有可能在茫茫大海中生還嗎？三則郵輪墜海故事 | X調查
+   https://youtu.be/OUmFmt9X9rc
+
+   [2025-01-14] SNG2c7WhpRE  (義大利 / 帕維亞省加爾拉斯科 (Garlasco))
+   女子在地下室樓梯上被發現，其男友發現了狀況，義大利樓梯懸案 | X調查
+   https://youtu.be/SNG2c7WhpRE
+
+   [2024-11-26] d3C4yi8YB_g  (菲律賓 / 宿霧州（推測）)
+   河流水下源頭蘊藏神祕洞穴，內部是怎樣的世界？探索菲律賓魔法河水下洞穴 | X調查
+   https://youtu.be/d3C4yi8YB_g
+
+🔒 [2024-11-22] DD9xcc3yEX0  (美國 / 三州 (Council Bluffs IA / Port Clinton OH / Valdosta GA))
+   三則離奇意外 | X調查會員
+   https://youtu.be/DD9xcc3yEX0
+
+   [2024-10-29] uAJW9NriR8U  (法國 / 穆然)
+   別墅女主人身處密室，木門上留下詭異一句話，法國穆然地下密室案 | X調查
+   https://youtu.be/uAJW9NriR8U
+
+🔒 [2024-10-26] 84Xwvagyxi8  (美國 / 柴郡)
+   柴郡入室盜竊縱火案 | X調查會員
+   https://youtu.be/84Xwvagyxi8
+
+   [2024-09-03] WDbgodJeToU  (美國 / 格雷顿)
+   麥當勞「屋頂劫匪」杰弗里 | X調查
+   https://youtu.be/WDbgodJeToU
+
+🔒 [2024-08-09] XuS_7DCPZZ0  (加拿大 / 不明)
+   加拿大辛迪謎案 | X調查會員
+   https://youtu.be/XuS_7DCPZZ0
+
+   [2024-07-09] l3HdKmQa2es  (英國 / 布雷肯比肯斯)
+   兩人結伴探索洞穴未知區域，潛水時突發狀況，威爾士鑰匙洞潛水事件 | X調查
+   https://youtu.be/l3HdKmQa2es
+
+   [2024-07-02] SJ4V_jYc_g4  (德國 / 柏林)
+   德國一美妝博主被害，DNA比對結果竟出現反轉，德國二重身謀殺案 | X調查
+   https://youtu.be/SJ4V_jYc_g4
+
+🔒 [2024-06-21] 7lk-yqKFygw  (台灣 / 埔里鎮)
+   南投黑寡婦林于如 | X調查會員
+   https://youtu.be/7lk-yqKFygw
+
+🔒 [2024-05-11] ACBO-pgNN4w  (台灣 / 台灣)
+   「鬼見愁」林來福 | X調查會員
+   https://youtu.be/ACBO-pgNN4w
+
+   [2024-04-30] VYfbB2hMk-U  (香港 / 新界東北部)
+   【都市傳說】此地靈異事件不斷，是純屬偶然還是猛鬼索命？香港新娘潭傳說 | X調查
+   https://youtu.be/VYfbB2hMk-U
+
+   [2024-04-16] OpTQ9IZqCCQ  (日本 / 東京（足立區）)
+   夫妻在家離奇失蹤，結果竟然在地板下有了發現，東京地板藏屍案 | X調查
+   https://youtu.be/OpTQ9IZqCCQ
+
+   [2024-04-02] Tfdr2z9XzCA  (印度 / 印度阿格拉 / 美國密西根州桑德萊克)
+   寵物目擊凶案過程，牠們能否幫助破案？幾則萌寵案件故事 | X調查
+   https://youtu.be/Tfdr2z9XzCA
+
+   [2024-03-26] rgpPYS2rViw  (阿根廷 / 巴塔哥尼亞)
+   誰才是第一個登頂之人？挑戰南美洲托雷峰之巔 | X調查
+   https://youtu.be/rgpPYS2rViw
+
+🔒 [2024-03-01] lNpnZ0H5Kik  (美國 / 派克頓)
+   羅登家族滅門案 | X調查會員
+   https://youtu.be/lNpnZ0H5Kik
+
+   [2024-02-13] 0DSBLJyOZP0  (英國 / 倫敦)
+   此人宣稱達·芬奇《美麗的公主》為贋品，一生偽造多件作品騙過大英博物館，英國藝術品偽造大師肖恩·格林哈爾 | X調查
+   https://youtu.be/0DSBLJyOZP0
+
+🔒 [2024-02-07] 2fT74G-NEYs  (香港 / 香港)
+   香港賊王季炳雄 | X調查會員
+   https://youtu.be/2fT74G-NEYs
+
+   [2024-02-06] PMN35ipl0hw  (香港 / 香港)
+   【都市傳說】香港第一猛鬼村，村民一夜全部消失，鎖羅盆村消失之謎 | X調查
+   https://youtu.be/PMN35ipl0hw
+
+🔒 [2024-01-05] c7f7k4mWR-Q  (美國 / 佛羅里達州希爾斯伯勒縣坦帕 (Tampa, FL))
+   廣告奸魔 | X調查會員
+   https://youtu.be/c7f7k4mWR-Q
+
+   [2023-12-19] t5ECoPx5tjg  (菲律賓 / 馬尼拉)
+   團伙犯案後潛逃國外，專挑本國遊客繼續作案，菲律賓遊客連環綁架案 | X調查
+   https://youtu.be/t5ECoPx5tjg
+
+   [2023-11-28] Dx21dLTaqZU  (韓國 / 巨余洞)
+   韓國巨余洞密室殺人事件 | X調查
+   https://youtu.be/Dx21dLTaqZU
+
+   [2023-10-27] uTJn8usEU6M  (墨西哥 / 尤卡坦州)
+   九頓天窗潛水事件，潛水員韓頲的洞潛傳奇 | X調查
+   https://youtu.be/uTJn8usEU6M
+
+   [2023-10-03] OtBk6z6EdiY  (美國 / 肯塔基州)
+   5個年輕人深夜去山上探洞，結果...咕嚕洞災難 | X調查
+   https://youtu.be/OtBk6z6EdiY
+
+   [2023-09-26] C6Wo8xmmhac  (日本 / 大阪)
+   大阪民宿近藤早紀事件 | X調查
+   https://youtu.be/C6Wo8xmmhac
+
+   [2023-09-12] dig44XcVXSM  (韓國 / 首爾)
+   韓國盜聖申昌源，越獄成功後劫富濟貧，同款衣服賣斷貨，無數民眾替他求情 | X調查
+   https://youtu.be/dig44XcVXSM
+
+🔒 [2023-07-22] stu-8LBsHDw  (香港 / 香港)
+   香港德福花園五屍案 | X調查會員
+   https://youtu.be/stu-8LBsHDw
+
+🔒 [2023-07-15] BO_BdlKC7QM  (美國 / 路易斯安那州斯洛特 (Slaughter, LA))
+   融進沙發裡的人 | X調查會員
+   https://youtu.be/BO_BdlKC7QM
+
+   [2023-07-11] Y3wPfiXLFRA  (日本 / 恩納村)
+   潛入藍洞之底，神祕的海洋藍洞裡發生的潛水故事 | X調查
+   https://youtu.be/Y3wPfiXLFRA
+
+🔒 [2023-06-10] wiMeMSMRmho  (俄羅斯 / 聖彼得堡)
+   俄羅斯開膛手奶奶 | X調查會員
+   https://youtu.be/wiMeMSMRmho
+
+🔒 [2023-05-19] g2_quq9KyFU  (台灣 / 不明)
+   洪若潭滅門案 | X調查會員
+   https://youtu.be/g2_quq9KyFU
+
+   [2023-04-18] TgYL3zlH0C4  (美國 / 華盛頓特區)
+   華盛頓特區最神祕的案件之一，羅伯特·王謀殺案 | X調查
+   https://youtu.be/TgYL3zlH0C4
+
+   [2023-04-11] 2pX4AfnCCl0  (加拿大 / 安大略省)
+   側寫師準確預測90%特徵，加拿大八角穀倉謀殺案 | X調查
+   https://youtu.be/2pX4AfnCCl0
+
+🔒 [2023-03-24] JXBD78Loy0A  (馬來西亞 / 不明)
+   馬來西亞洪美鳳案 | X調查會員
+   https://youtu.be/JXBD78Loy0A
+
+🔒 [2023-03-04] OARowM0ss5o  (台灣 / 花蓮縣吉安鄉)
+   花蓮五子案 | X調查會員
+   https://youtu.be/OARowM0ss5o
+
+🔒 [2023-02-24] 6IBsBVEPqDY  (香港 / 香港葵涌荔景邨)
+   香港第一猛鬼凶宅 ，荔景邨情殺案 | X調查會員
+   https://youtu.be/6IBsBVEPqDY
+
+   [2023-02-21] jPd11Vp31TM  (美國 / 洛杉磯)
+   丈夫在外出差，妻子在家出事，這次還是丈夫嗎？米歇爾·楊案 | X調查
+   https://youtu.be/jPd11Vp31TM
+
+   [2023-02-14] OIAvzGpQRCw  (加拿大 / 惠斯勒)
+   加拿大男子偶然看見巨人，之後遭遇更加離奇，惠斯勒山巨人目擊事件 | X調查
+   https://youtu.be/OIAvzGpQRCw
+
+   [2023-02-07] vmxf2Z_NQ88  (日本 / 鳥取市)
+   與她接觸的男人都沒有好下場，不美妖婦上田美由紀 | X調查
+   https://youtu.be/vmxf2Z_NQ88
+
+   [2023-01-24] YYvUTv7iXnA  (美國 / 紐約)
+   成功騙過頂級拍賣行的男人，偽畫大師貝特萊奇 | X調查
+   https://youtu.be/YYvUTv7iXnA
+
+   [2023-01-17] WdWMEkgcWHw  (日本 / 弘前)
+   日本弘前大學教授夫人事件，又名：松永事件 | X調查
+   https://youtu.be/WdWMEkgcWHw
+
+   [2023-01-03] SOZmdxjQxjs  (英國 / 切姆斯福德)
+   英國經典燒腦案件，白屋農場謀殺案 | X調查
+   https://youtu.be/SOZmdxjQxjs
+
+   [2022-12-13] XcF7IwIpJHk  (韓國 / 梧倉)
+   韓國梧倉懸屍案 | X調查
+   https://youtu.be/XcF7IwIpJHk
+
+🔒 [2022-12-10] iHPBwMHFyks  (香港 / 跑馬地)
+   香港跑馬地紙盒藏屍案 | X調查會員
+   https://youtu.be/iHPBwMHFyks
+
+   [2022-11-29] zekeLIAFvbc  (羅馬尼亞 / 布加勒斯特)
+   益野友利香羅馬尼亞事件 | X調查
+   https://youtu.be/zekeLIAFvbc
+
+   [2022-11-22] C05WlsZlwWo  (新加坡 / 濱海南 (Marina South))
+   新加坡傅美英勞力士手錶案 | X調查
+   https://youtu.be/C05WlsZlwWo
+
+🔒 [2022-11-19] a7gCRurKpFM  (香港 / 沙田)
+   香港沙田空姐溶屍案 | X調查會員
+   https://youtu.be/a7gCRurKpFM
+
+   [2022-11-01] Ak4RRWiD2pE  (日本 / 宮崎縣)
+   女子開跑車到處騙年輕人上車，宮崎知子誘拐殺人事件 | X調查
+   https://youtu.be/Ak4RRWiD2pE
+
+   [2022-10-25] MwUyyZ9lURo  (美國 / 南卡羅來納州)
+   默道克律師家族謎案 | X調查
+   https://youtu.be/MwUyyZ9lURo
+
+   [2022-10-18] b8_Dy0IopVc  (日本 / 東京柴又)
+   東京柴又女子大生放火殺人事件 | X調查
+   https://youtu.be/b8_Dy0IopVc
+
+   [2022-10-04] GXooSf2IkKA  (日本 / 福岡)
+   福岡美容師殺人事件 | X調查
+   https://youtu.be/GXooSf2IkKA
+
+🔒 [2022-09-24] HP32Q1bHgL4  (美國 / 波士頓)
+   哈佛女生簡·布里頓案 | X調查會員
+   https://youtu.be/HP32Q1bHgL4
+
+   [2022-09-13] HZqxPNXm6jk  (日本 / 大分市)
+   女大學生深夜回公寓遭遇不測，綠莊公寓謎案 | X調查
+   https://youtu.be/HZqxPNXm6jk
+
+🔒 [2022-09-11] sT_31jOYVB0  (美國 / 亞利桑那州)
+   父母外出度週末後離奇失蹤，錢德勒·霍爾德森 | X調查會員
+   https://youtu.be/sT_31jOYVB0
+
+   [2022-09-06] dva-bxeoc-c  (法國 / 貝尼特斯)
+   選美小姐賽前離奇失蹤，法國貝尼特斯母女失蹤案 | X調查
+   https://youtu.be/dva-bxeoc-c
+
+   [2022-08-30] wiIF_yGK7wE  (韓國 / 寶城)
+   大學生情侶海邊旅遊失蹤，韓國寶城漁船案 | X調查
+   https://youtu.be/wiIF_yGK7wE
+
+🔒 [2022-08-27] uXx2QAoyzm4  (美國 / 不明)
+   肖特家族謀殺案 | X調查會員
+   https://youtu.be/uXx2QAoyzm4
+
+   [2022-08-23] 0GHNr00ztHQ  (日本 / 石川縣大崎海灘)
+   新婚夫妻海灘散步踩到大坑，日本石川縣大崎海灘事件 | X調查
+   https://youtu.be/0GHNr00ztHQ
+
+   [2022-08-16] yCcbfimtV0k  (美國 / 卡爾斯巴德)
+   雷修古拉洞救援事件 | X調查
+   https://youtu.be/yCcbfimtV0k
+
+   [2022-08-02] AyspMUTMBKc  (美國 / 教堂山)
+   教堂山1502公寓 | X調查
+   https://youtu.be/AyspMUTMBKc
+
+   [2022-07-26] 1ZfeuQWca-Y  (日本 / 龜戶)
+   龜戶女漫畫家殺人事件 | X調查
+   https://youtu.be/1ZfeuQWca-Y
+
+   [2022-07-19] caYu4M-4gYE  (泰國 / 龜島)
+   泰國龜島海灘謎案 | X調查
+   https://youtu.be/caYu4M-4gYE
+
+   [2022-07-12] q0_TO-Apfk4  (美國 / 佛羅里達州)
+   佛州鐵軌旁的男子 | X調查
+   https://youtu.be/q0_TO-Apfk4
+
+🔒 [2022-07-09] 1zmaY7np0k4  (美國 / 阿爾巴)
+   卡菲家族謀殺案 | X調查會員
+   https://youtu.be/1zmaY7np0k4
+
+   [2022-07-05] XrZ4OkHB0HM  (日本 / 神奈川縣)
+   神奈川鋼琴噪音殺人事件 | X調查
+   https://youtu.be/XrZ4OkHB0HM
+
+   [2022-06-21] jLXn0T9w5cM  (英國 / 約克郡)
+   莫斯代爾洞穴事件 | X調查
+   https://youtu.be/jLXn0T9w5cM
+
+🔒 [2022-06-19] 9l4xMpwfFLk  (日本 / 福岡市)
+   博多湖慘案 | X調查會員
+   https://youtu.be/9l4xMpwfFLk
+
+   [2022-05-17] 1OUSrs_hJLw  (日本 / 東京)
+   東京秋葉原采耳店事件 | X調查
+   https://youtu.be/1OUSrs_hJLw
+
+🔒 [2022-05-15] TYlprrAT2n4  (美國 / 愛荷華州厄爾利 (Early, IA))
+   女鄰居特蕾西 | X調查會員
+   https://youtu.be/TYlprrAT2n4
+
+   [2022-05-10] IMHxLd7hHbg  (南非 / 約翰內斯堡)
+   印度裔夫妻前往南非度蜜月，結果發生驚天謎案 | X調查
+   https://youtu.be/IMHxLd7hHbg
+
+🔒 [2022-05-08] k8OTVGiXx_A  (英國 / 德比郡 Eastmoor (峰區國家公園東緣))
+   陶器小屋謀殺案 | X調查會員
+   https://youtu.be/k8OTVGiXx_A
+
+   [2022-05-03] o832TY2IyAw  (澳洲 / 諾福克島)
+   千人小島百年第一案，諾福克島案 | X調查
+   https://youtu.be/o832TY2IyAw
+
+   [2022-04-19] itmWylFVEJk  (美國 / 弗吉尼亞州)
+   逃離梅克倫堡監獄 | X調查
+   https://youtu.be/itmWylFVEJk
+
+🔒 [2022-03-26] Tj-6-Ar6Bgw  (澳洲 / 悉尼)
+   悉尼一家滅門案 | X調查會員
+   https://youtu.be/Tj-6-Ar6Bgw
+
+   [2022-03-22] GoRqKlCmS6M  (日本 / 北海道)
+   北海道城丸君事件 | X調查
+   https://youtu.be/GoRqKlCmS6M
+
+   [2022-03-15] wdt6eE4-PyQ  (英國 / 英吉利海峽)
+   巧破英吉利海峽疑案 | X調查
+   https://youtu.be/wdt6eE4-PyQ
+
+🔒 [2022-03-12] sZJ65i2YA1A  (日本 / 名古屋市)
+   名古屋情侶殺人事件 | X調查會員
+   https://youtu.be/sZJ65i2YA1A
+
+   [2022-03-01] GImxFMhBj9o  (加拿大 / 霍格斯貝克湖)
+   女子在湖邊露營後失蹤，加拿大霍格斯貝克湖畔失蹤事件 | X調查
+   https://youtu.be/GImxFMhBj9o
+
+   [2022-02-15] G49O674eZ_M  (美國 / 洛杉磯)
+   狗狗散步時突然停下腳步，加文·史密斯案 | X調查
+   https://youtu.be/G49O674eZ_M
+
+   [2022-02-08] NLUAs7sV4e4  (美國 / 加州)
+   沙漠裡意外發現的祕密 | X調查
+   https://youtu.be/NLUAs7sV4e4
+
+   [2022-02-01] HAFoiDXKexk  (美國 / 門羅)
+   門羅運鈔車劫案 | X調查
+   https://youtu.be/HAFoiDXKexk
+
+   [2022-01-25] jMLFWAW2g-A  (尼泊爾 / 珠穆朗瑪峰)
+   珠峰上的奇蹟 | X調查
+   https://youtu.be/jMLFWAW2g-A
+
+🔒 [2022-01-22] RT6Ja63Y5uQ  (韓國 / 首爾)
+   韓國牙醫母女案 | X調查會員
+   https://youtu.be/RT6Ja63Y5uQ
+
+   [2022-01-21] dRuEt_4GfhE  (美國 / 查爾斯頓)
+   鬧鬼的查爾斯頓老城監獄
+   https://youtu.be/dRuEt_4GfhE
+
+   [2022-01-18] CcECLooSFdA  (英國 / 伦敦)
+   朗埃克巷案 | X調查
+   https://youtu.be/CcECLooSFdA
+
+   [2022-01-14] 2yY5cG0N0no  (日本 / 八戸市)
+   八戸市女子中學生事件 | X調查
+   https://youtu.be/2yY5cG0N0no
+
+   [2022-01-07] cUnQSoZJDSw  (日本 / 福岡縣)
+   日本都市傳說之犬鳴村
+   https://youtu.be/cUnQSoZJDSw
+
+   [2022-01-04] jxuihjs6CIQ  (南非 / 布須曼洞穴)
+   潛水員戴夫原型故事，南非布須曼洞穴事件 | X調查
+   https://youtu.be/jxuihjs6CIQ
+
+   [2021-12-31] XobDfLn5PVk  (日本 / 本所)
+   日本神怪傳說之本所七大不可思議 | X調查
+   https://youtu.be/XobDfLn5PVk
+
+   [2021-12-28] 8uoSWlGK1DI  (美國 / 加州)
+   20號公路「幽靈」 | X調查
+   https://youtu.be/8uoSWlGK1DI
+
+   [2021-12-21] osdjWD5v_jQ  (英國 / 伦敦)
+   斯潘塞莊園消失的女主 | X調查
+   https://youtu.be/osdjWD5v_jQ
+
+   [2021-11-30] UMuUeTSOsa8  (義大利 / 阿萊蓋)
+   義大利阿萊蓋小鎮27年疑雲 | X調查
+   https://youtu.be/UMuUeTSOsa8
+
+   [2021-11-23] 2gWZRDHJSpw  (印度 / 諾伊達)
+   印度諾伊達屋中謎案 | X調查
+   https://youtu.be/2gWZRDHJSpw
+
+   [2021-11-16] I2V9ZTizu2Q  (美國 / 落基山脈地區)
+   落基山脈的尋寶遊戲 ｜ X調查
+   https://youtu.be/I2V9ZTizu2Q
+
+   [2021-11-09] PYSq2dGTqBs  (澳洲 / 悉尼)
+   澳洲明信片大盜的越獄計劃 | X調查
+   https://youtu.be/PYSq2dGTqBs
+
+   [2021-11-02] LXP9e84APP0  (澳洲 / 凱普奧特威)
+   澳洲UFO研究員失蹤之謎 | X調查
+   https://youtu.be/LXP9e84APP0
+
+   [2021-10-26] PSYjNvIvUR4  (義大利 / 羅馬)
+   西蒙內塔羅馬謎案 | X調查
+   https://youtu.be/PSYjNvIvUR4
+
+   [2021-10-12] tDOeZnQkg3E  (美國 / 肯塔基州)
+   女子與家人外出露營時失蹤，有人認為她在堅果油灰洞裡
+   https://youtu.be/tDOeZnQkg3E
+
+   [2021-10-05] ffSGKjYrFM4  (美國 / 新罕布什爾州羅金厄姆縣 (Rockingham County, NH))
+   夜晚妻子在學校加班，丈夫獨自回家後遭暗算，結果竟然是
+   https://youtu.be/ffSGKjYrFM4
+
+   [2021-09-29] O85jfem0Eo8  (英國 / 蘇格蘭高地)
+   蘇格蘭高中生在徒步登山時突遇暴雪，附近就有安全屋他們能否化險為夷
+   https://youtu.be/O85jfem0Eo8
+
+   [2021-09-28] ODtoSj1KAM8  (美國 / 大西洋城)
+   女子在家遭遇不測，閨蜜指證是女子丈夫所為，貝西謀殺案
+   https://youtu.be/ODtoSj1KAM8
+
+   [2021-09-24] rrPdhDPRG24  (日本 / 三島市)
+   三島女子大專生兼職下班後未回家，警方這次能否找出真凶
+   https://youtu.be/rrPdhDPRG24
+
+   [2021-09-19] ewB-7B847IU  (日本 / 坂出市)
+   【未解懸案】大西有紀失蹤事件，與家人在山裡參加活動時神祕失蹤
+   https://youtu.be/ewB-7B847IU
+
+   [2021-09-07] ySeY4chzauQ  (美國 / 田納西州富蘭克林縣)
+   路人甲在路旁意外發現一團火堆，調查層層推進終於釐清真相
+   https://youtu.be/ySeY4chzauQ
+
+   [2021-09-03] Z0fkRyVTca4  (英國 / 格洛斯特郡雷德馬利 (Redmarley D'Abitot))
+   農場女主人不知原因莫名失蹤，一本關鍵日記的出現成功幫助破案
+   https://youtu.be/Z0fkRyVTca4
+
+   [2021-08-31] NPekXbifzCk  (美國 / 德州布朗蒂 (Bronte, TX, US-277))
+   丈夫與妻子吵架後半夜離家不知所蹤，線索只有一通詭異的報警電話
+   https://youtu.be/NPekXbifzCk
+
+   [2021-08-27] buRluFR0OAQ  (美國 / 丹尼莫拉)
+   三名獄友研究出一條牢房地下密道，結果竟然真的通往了監獄外
+   https://youtu.be/buRluFR0OAQ
+
+   [2021-08-17] b_XS8EhmSK4  (西班牙 / 馬略卡島)
+   兩人進入西班牙馬略卡島大型水下洞穴，中途因找不到引路繩索而被困
+   https://youtu.be/b_XS8EhmSK4
+
+   [2021-08-10] PshwLB4ZITw  (英國 / 漢普郡)
+   漢普郡少女深夜回家後不知所蹤，警方通過層層篩查最終鎖定嫌疑人
+   https://youtu.be/PshwLB4ZITw
+
+   [2021-08-03] tLYDlbLWNvk  (日本 / 千葉縣)
+   四女生凌晨出門買零食偶遇神祕人，其中一人被帶走後再也沒有出現
+   https://youtu.be/tLYDlbLWNvk
+
+   [2021-07-30] d3_EAEx2S8I  (澳洲 / 維多利亞州)
+   澳洲小伙為了挽回心愛妻子而越獄，沒料之後深陷另一樁疑案
+   https://youtu.be/d3_EAEx2S8I
+
+   [2021-07-23] w0oK63fVSww  (日本 / 三重縣四日市市)
+   女生參加煙火晚會後遭遇不測，嫌疑人心理素質高超險些蒙混過關
+   https://youtu.be/w0oK63fVSww
+
+   [2021-07-06] 3N1YDT32cj0  (美國 / 羅徹斯特理工大學 (RIT, Rochester NY))
+   一個無限循環的樓梯，無論朝什麼方向走都會回到原點，彭羅斯階梯的故事
+   https://youtu.be/3N1YDT32cj0
+
+   [2021-07-02] 3bHRF29lw2I  (日本 / 東京都渋谷區)
+   東京女演員深夜回家後遭遇不測，半年後警方依靠DNA成功破案
+   https://youtu.be/3bHRF29lw2I
+
+   [2021-06-29] TNjqP6PxoJg  (美國 / 佛羅里達州塔拉哈西 (Tallahassee, FL))
+   大學教授在自家車庫遇襲，行凶者雖被找到但还有幕後主使
+   https://youtu.be/TNjqP6PxoJg
+
+   [2021-06-22] rnHHmprzb7E  (挪威 / 普拉)
+   5名潛水員進入北歐最深水下洞穴，遭遇危機後能否化險為夷
+   https://youtu.be/rnHHmprzb7E
+
+   [2021-06-11] 5XBv48HBsBc  (美國 / 愛荷華州)
+   女子騎車途經玉米地後遭遇不測，關鍵目擊者助警方三天破案
+   https://youtu.be/5XBv48HBsBc
+
+   [2021-06-01] 7DyOpjchlEI  (美國 / 愛荷華州)
+   女子被發現倒在自家農場的紅棚裡，一把釘耙成為了關鍵線索
+   https://youtu.be/7DyOpjchlEI
+
+   [2021-05-25] kGm1Q3ktj9c  (德國 / 北萊茵-威斯特法倫州)
+   三人進入德國最深洞穴探險，在1000米深位置被困後展開救援
+   https://youtu.be/kGm1Q3ktj9c
+
+   [2021-05-18] i5IZ4D4IQaA  (美國 / 佛羅里達州)
+   英國女船員在迪士尼遊輪上離奇失蹤，調查結果受到家人質疑
+   https://youtu.be/i5IZ4D4IQaA
+
+   [2021-05-14] j1kCvmfm2e4  (美國 / 德州中洛錫安溪畔教堂 (Midlothian Creekside Church, TX))
+   女子在教堂遭遇不測，監控清晰拍下嫌疑人的身影，其身分成最大謎團
+   https://youtu.be/j1kCvmfm2e4
+
+   [2021-05-11] nfcOQOaUu1Q  (泰國 / 烏汶府)
+   婚禮8天後妻子將丈夫推下懸崖，她究竟有什麼難言之隱
+   https://youtu.be/nfcOQOaUu1Q
+
+   [2021-04-27] 0gSVGmIvPWI  (德國 / 維爾恩斯多夫 (Wilnsdorf, NRW))
+   男子深夜離家前寫下神秘字母，後來竟成功預言自己的不測
+   https://youtu.be/0gSVGmIvPWI
+
+   [2021-04-20] KyWHPUMyqvg  (日本 / 墨田區)
+   不要相信洋子的話，嵐真由美失蹤事件
+   https://youtu.be/KyWHPUMyqvg
+
+   [2021-04-06] 5E2BXbedcmo  (美國 / 夏威夷)
+   瑜伽雙胞胎姐妹開車墜入海邊懸崖，車內的姐姐成為了唯一嫌疑人
+   https://youtu.be/5E2BXbedcmo
+
+   [2021-04-02] wHNKtYo68Eo  (日本 / 南丹市)
+   日常開朗的陽光男孩突然性情大變，留下一輛車後離奇失蹤
+   https://youtu.be/wHNKtYo68Eo
+
+   [2021-03-19] GMwbNbwoX4k  (加拿大 / 維多利亞)
+   發生在加拿大的詭異懸案，艾瑪·菲麗珀芙失蹤案
+   https://youtu.be/GMwbNbwoX4k
+
+   [2021-03-16] 3zAd-Rrmjvo  (英國 / 薩里郡)
+   英國薩里郡的失蹤少女，露絲·威爾森失蹤之謎
+   https://youtu.be/3zAd-Rrmjvo
+
+   [2021-03-05] cTVWfoHGT7M  (美國 / 康乃狄克州)
+   空姐下班回家後離奇失蹤，警方找出有力物證成功將兇手定罪，李昌鈺印象最深刻的案件之一
+   https://youtu.be/cTVWfoHGT7M
+
+   [2021-02-23] P5wfJ4Z0y8s  (日本 / 原町市)
+   女子大白天下班後離奇失蹤，一年後家人接到詭異來電
+   https://youtu.be/P5wfJ4Z0y8s
+
+   [2021-02-09] S3iNNQnku-I  (美國 / 加州)
+   男子越獄後靠驚人演技成功騙過警察，麥克奈爾的三次越獄故事
+   https://youtu.be/S3iNNQnku-I
+
+   [2021-02-02] LmXInnq9-6c  (日本 / 伊勢市)
+   女記者深夜下班後神秘失蹤，日本伊勢市記者失蹤懸案
+   https://youtu.be/LmXInnq9-6c
+
+   [2021-01-26] corAAPSb9gY  (美國 / 洛杉磯)
+   設局找出關鍵證據成功破案，女子啦啦隊長的愛恨情仇
+   https://youtu.be/corAAPSb9gY
+
+   [2021-01-12] f5de5eqg7JM  (美國 / 北卡羅萊納州夏洛特卡托巴河 (Catawba River, Charlotte, NC))
+   男子河邊釣魚時附近發生詭異車禍，無法自證清白成最大嫌疑人
+   https://youtu.be/f5de5eqg7JM
+
+   [2020-12-22] gsEOnCFMyvs  (英國 / 布里斯托 (Bristol))
+   女子在公寓中失蹤，兩位隔壁鄰居成為嫌疑人
+   https://youtu.be/gsEOnCFMyvs
+
+   [2020-08-25] NvGaHnhmpwU  (加拿大 / 多倫多)
+   他自稱偽鈔之神，印制2.5億巨額超級美鈔，最後被收編為防偽專家
+   https://youtu.be/NvGaHnhmpwU
+
+   [2020-07-22] EgmhVP3Ar3o  (加拿大 / 多倫多)
+   億萬富翁捲入三起迷案，採訪後忘關話筒道出驚天秘密
+   https://youtu.be/EgmhVP3Ar3o
+
+   [2020-05-02] jRt9QkzMpk4  (保加利亞 / 瓦爾納機場 (Varna Airport))
+   德國小伙未知原因突然跑出機場大廳，拉爾斯失蹤事件
+   https://youtu.be/jRt9QkzMpk4
+
+   [2020-04-25] 1j9OGQe744Y  (美國 / 達勒姆)
+   樓梯懸案 - Q+A
+   https://youtu.be/1j9OGQe744Y
+
+   [2019-11-22] WeGW1jW_kU0  (美國 / 賓州伊利市 PNC Bank (Erie, PA))
+   無法完成的尋寶遊戲（下）：真正的幕後主使
+   https://youtu.be/WeGW1jW_kU0
+
+   [2019-11-16] 5mheKuU9Jmw  (美國 / 賓州伊利市 PNC Bank (Erie, PA))
+   無法完成的尋寶遊戲（上）
+   https://youtu.be/5mheKuU9Jmw
+
+   [2019-11-06] zfySwW7uWK4  (日本 / 加茂)
+   加茂前雪失蹤事件，一封神秘來信揭示了真相？
+   https://youtu.be/zfySwW7uWK4
+
+   [2019-10-05] qTPxc7JdSVA  (紐西蘭 / 普克卡瓦)
+   普克卡瓦血屋案（下），超出合理懷疑
+   https://youtu.be/qTPxc7JdSVA
+
+   [2019-09-27] E8R85Gtwwj0  (芬蘭 / 普克卡瓦)
+   普克卡瓦血屋案（中）
+   https://youtu.be/E8R85Gtwwj0
+
+   [2019-09-22] QPWmMHorrcc  (芬蘭 / 普克卡瓦)
+   普克卡瓦血屋案（上）
+   https://youtu.be/QPWmMHorrcc
+
+   [2019-04-14] vn5HUBShI7M  (韓國 / 釜山市水营区广安洞)
+   轟動整個韓國的失蹤案，釜山新婚夫妻回家後神秘消失
+   https://youtu.be/vn5HUBShI7M
+
+
+=== Solved but no resolveYear (34 件) ===
+
+   [2026-04-28] MziAGWkk_64  crime=2011  (韓國)
+   當專家遇上對手：釜山犯罪學教授的「 完美佈局」，看警方如何靠證據破局
+   https://youtu.be/MziAGWkk_64
+
+🔒 [2026-04-17] lSaPaq6sD9s  crime=2000  (韓國)
+   韓國少年目睹命案卻被當成兇手，蒙冤坐獄10年，真凶最終被抓，益山市計程車司機事件 | X調查會員
+   https://youtu.be/lSaPaq6sD9s
+
+🔒 [2026-03-20] FDCMnBx2Kok  crime=2012  (台灣)
+   蔡京京弒母案 | X調查會員
+   https://youtu.be/FDCMnBx2Kok
+
+🔒 [2026-03-13] yBIvPbOyY1A  crime=2004  (日本)
+   福岡大牟田4人殺害事件 | X調查會員
+   https://youtu.be/yBIvPbOyY1A
+
+   [2026-02-13] JCXSknQdKks  crime=2010  (韓國)
+   現實版《嫌疑人X的獻身》，韓國史上靠間接證據定罪的經典案件 | 釜山無屍謀殺案
+   https://youtu.be/JCXSknQdKks
+
+🔒 [2026-01-15] YoSwJLXWhXI  crime=2000  (香港)
+   灣仔酒店情殺案 | X調查會員
+   https://youtu.be/YoSwJLXWhXI
+
+🔒 [2025-12-26] HI_DOclNJb4  crime=2021  (英國)
+   倫敦張美娟案 | X調查會員
+   https://youtu.be/HI_DOclNJb4
+
+   [2025-10-31] JN0vggZkRfA  crime=2013  (法國)
+   金·卡戴珊的巴黎驚魂一夜，千萬美元珠寶被劫，劫匪竟是一群爺爺？
+   https://youtu.be/JN0vggZkRfA
+
+   [2025-10-21] 7aXyNnRjBVw  crime=1990  (美國)
+   豪門千金捲入馬球明星命案，最終判決出乎所有人意料 | 阿什蘭農場謎案
+   https://youtu.be/7aXyNnRjBVw
+
+   [2025-09-26] VN-lp_JXcOM  crime=2014  (美國)
+   19歲女留學生魂斷愛荷華，「週末男友」的祕密被揭開，邵童謀殺案
+   https://youtu.be/VN-lp_JXcOM
+
+   [2025-08-01] nyz_x6p1uRA  crime=2009  (瑞典)
+   現實版好萊塢電影情節，瑞典史上第一直升機劫案
+   https://youtu.be/nyz_x6p1uRA
+
+🔒 [2025-07-25] fdNH0mWPq18  crime=1940  (中國)
+   醬園弄箱屍案 | X調查會員
+   https://youtu.be/fdNH0mWPq18
+
+   [2025-06-10] G5pBZHf4d0E  crime=1995  (奧地利)
+   數條生命離世的黑暗祕密：奧地利黑寡婦的真實故事
+   https://youtu.be/G5pBZHf4d0E
+
+🔒 [2025-02-08] VQ8SAEXAgjY  crime=2005  (俄羅斯)
+   俄羅斯棋盤殺手 | X調查會員
+   https://youtu.be/VQ8SAEXAgjY
+
+🔒 [2024-12-13] rIgF5GuUQtE  crime=1953  (美國)
+   快樂黑寡婦南妮 | X調查會員
+   https://youtu.be/rIgF5GuUQtE
+
+   [2024-09-24] 6IbMTHjmCfw  crime=2022  (美國)
+   韓裔妻子被丈夫活埋，強壓恐懼下嘗試極限自救，華盛頓州韓裔埋妻案 | X調查
+   https://youtu.be/6IbMTHjmCfw
+
+   [2024-09-17] i1rWgpA29m4  crime=1992  (日本)
+   丈夫和兒子接連離奇落海，長崎·佐賀殺人事件 | X調查
+   https://youtu.be/i1rWgpA29m4
+
+🔒 [2024-08-02] PT3dIMTUt3U  crime=1983  (英國)
+   逃離梅茲監獄 | X調查會員
+   https://youtu.be/PT3dIMTUt3U
+
+   [2024-06-25] eRtbLSjvFdc  crime=2016  (香港)
+   香港荃灣工廈石棺藏屍案 | X調查
+   https://youtu.be/eRtbLSjvFdc
+
+   [2024-05-07] jolwffrBkig  crime=2006  (英國)
+   伊拉克女移民在倫敦失蹤，家中查出不可告人的祕密，倫敦行李箱藏屍案 | X調查
+   https://youtu.be/jolwffrBkig
+
+🔒 [2024-03-23] b_rTAtiVw9M  crime=1980  (美國)
+   加州暗夜魔王 | X調查會員
+   https://youtu.be/b_rTAtiVw9M
+
+   [2024-01-23] lKTJb9j_J7Q  crime=1998  (德國)
+   德國最慘烈的列車事故之一，艾雪德列車脫軌事故 | X調查
+   https://youtu.be/lKTJb9j_J7Q
+
+🔒 [2024-01-13] JsKUzN4EUjg  crime=2011  (白俄羅斯)
+   明斯克地鐵爆炸案 | X調查會員
+   https://youtu.be/JsKUzN4EUjg
+
+🔒 [2023-12-29] U-0voy2MafA  crime=1999  (日本)
+   下關隨機殺人事件 | X調查會員
+   https://youtu.be/U-0voy2MafA
+
+🔒 [2023-10-28] 2nDjLgYzEak  crime=1970  (香港)
+   香港佳寧案 | X調查會員
+   https://youtu.be/2nDjLgYzEak
+
+   [2023-09-05] dXIdHNdxPdw  crime=1982  (美國)
+   DNA證據讓40年懸案真相大白，萬萬沒想到兇手竟然是他 | X調查
+   https://youtu.be/dXIdHNdxPdw
+
+🔒 [2023-04-22] bzZETY_-YOk  crime=1999  (中國)
+   杭州劉超連環殺人碎屍案 | X調查會員
+   https://youtu.be/bzZETY_-YOk
+
+🔒 [2023-04-07] Hq9Q0FHDNvs  crime=1988  (香港)
+   香港康怡花園烹夫案 | X調查會員
+   https://youtu.be/Hq9Q0FHDNvs
+
+   [2023-04-04] TrpJZsc263g  crime=2017  (中國)
+   上海殺妻冰櫃藏屍案 | X調查
+   https://youtu.be/TrpJZsc263g
+
+🔒 [2023-02-11] UobMICrrlAs  crime=1910  (英國)
+   英國浴缸新娘案 | X調查會員
+   https://youtu.be/UobMICrrlAs
+
+🔒 [2022-12-31] 22gj2JyuSl0  crime=2016  (日本)
+   千葉縣酒酒井町肢解殺人事件 | X調查會員
+   https://youtu.be/22gj2JyuSl0
+
+   [2021-10-14] U3lkl5nf2u0  crime=2010  (美國)
+   偷飛機的赤腳大盜：柯爾頓·摩爾 | X調查
+   https://youtu.be/U3lkl5nf2u0
+
+   [2019-04-27] kiWbp5POm6k  crime=2006  (英國)
+   英國肯特郡金庫大劫案，團夥搶劫英格蘭銀行5300萬英鎊現鈔
+   https://youtu.be/kiWbp5POm6k
+
+   [2019-03-26] lQYCVaSfsto  crime=1925  (法國)
+   賣掉2次埃菲爾鐵塔的男人，勒斯蒂格的傳奇故事
+   https://youtu.be/lQYCVaSfsto
