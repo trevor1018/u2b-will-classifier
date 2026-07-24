@@ -52,6 +52,18 @@ PINS = {
         "country": "紐西蘭",
         "note": "fix 芬蘭 → 紐西蘭; match （下）episode qTPxc7JdSVA",
     },
+    # 矽谷精英一家冰封禁區案 = the James Kim family, Nov 2006. The San
+    # Francisco family got stranded on a side road off Bear Camp Road in the
+    # Rogue River Canyon (Siskiyou National Forest), SW Oregon — NOT California
+    # (the LLM guessed 加州 from "Silicon Valley family"). James Kim died of
+    # exposure in the Klamath Mountains while seeking help.
+    "0as9lkl6cHw": {
+        "lat": 42.66,
+        "lon": -123.93,
+        "city": "奧勒岡州 (Bear Camp Road, 羅格河峽谷)",
+        "country": "美國",
+        "note": "fix 加州 → 奧勒岡州 (James Kim family, 2006)",
+    },
 }
 
 
