@@ -21,6 +21,27 @@ PINS = {
         "country": "海上",
         "note": "compilation — Miami/Jamaica route midpoint",
     },
+    # 女子露營失蹤案 — LLM hallucinated 肯塔基州. The case's only geographic
+    # anchor is Nutty Putty Cave (堅果油灰洞), which is in Utah County, Utah —
+    # not Kentucky. Corrected to Utah state (centroid), consistent with the
+    # state-level pins the LLM used elsewhere.
+    "tDOeZnQkg3E": {
+        "lat": 39.321,
+        "lon": -111.094,
+        "city": "猶他州",
+        "country": "美國",
+        "note": "fix hallucinated 肯塔基州 → 猶他州 (Nutty Putty Cave is in Utah)",
+    },
+    # 空姐離奇失蹤案 = Helle Crafts (Pan Am), 1986 woodchipper murder, Dr.
+    # Henry Lee case. State-level 康乃狄克州 was correct; refined to the actual
+    # town, Newtown, CT.
+    "cTVWfoHGT7M": {
+        "lat": 41.4137,
+        "lon": -73.3037,
+        "city": "紐敦 (Newtown, CT)",
+        "country": "美國",
+        "note": "refine 康乃狄克州 → Newtown, CT (Helle Crafts case)",
+    },
 }
 
 
