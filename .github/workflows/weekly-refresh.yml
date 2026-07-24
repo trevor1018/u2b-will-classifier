@@ -33,7 +33,20 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/refresh.py
+        # Match the manually-tuned geo-lookup strength, incrementally:
+        #  1. --refine-geo : full base refresh (fetch + classify NEW videos +
+        #     Nominatim + build) AND re-classify any weak entries lacking a
+        #     specific city/coords. LLM-only, ~$0.12.
+        #  2. --web-search-geo : for cases still unpinnable from title/desc,
+        #     use Claude web_search. Self-limiting — skips entries that already
+        #     have coords + a geocodable city — so a weekly run only searches
+        #     the handful of new stubborn cases (~<$0.20/run; real web_search
+        #     cost ≈ $0.09/call, not the $0.01 in the flag's help text).
+        # Manual pins survive both: they carry specific city+coords, so
+        # --refine-geo never evicts them and web_search skips them.
+        run: |
+          python scripts/refresh.py --refine-geo
+          python scripts/refresh.py --web-search-geo
 
       - name: Commit and push if changed
         run: |
