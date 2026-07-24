@@ -42,6 +42,16 @@ PINS = {
         "country": "美國",
         "note": "refine 康乃狄克州 → Newtown, CT (Helle Crafts case)",
     },
+    # 普克卡瓦血屋案（上）— the （上）episode was pinned to Finland while the
+    # （下）episode sat in New Zealand. Pukekawa is in Waikato, NZ (the Crewe
+    # murders). Aligned to the （下）episode's NZ coords.
+    "QPWmMHorrcc": {
+        "lat": -37.8,
+        "lon": 174.9,
+        "city": "普克卡瓦",
+        "country": "紐西蘭",
+        "note": "fix 芬蘭 → 紐西蘭; match （下）episode qTPxc7JdSVA",
+    },
 }
 
 
