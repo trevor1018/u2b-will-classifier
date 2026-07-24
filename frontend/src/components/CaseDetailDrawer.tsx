@@ -17,6 +17,13 @@ export function CaseDetailDrawer() {
 
   const ytEmbed = `https://www.youtube.com/embed/${c.id}`;
 
+  // Sibling episodes of the same multi-part case (上/下集), ordered 上→下.
+  const siblings = c.episodeGroup
+    ? cases
+        .filter((x) => x.episodeGroup === c.episodeGroup)
+        .sort((a, b) => (a.episodeIndex ?? 0) - (b.episodeIndex ?? 0))
+    : [];
+
   return (
     // z-[1000] beats Leaflet's controls (which sit at ~1000) and any other
     // map-internal panes, so the drawer always stacks on top regardless of
@@ -61,6 +68,34 @@ export function CaseDetailDrawer() {
             </span>
           )}
         </div>
+
+        {siblings.length > 1 && (
+          <div className="mb-3">
+            <div className="mb-1.5 flex items-center gap-1.5 text-xs text-sky-400">
+              📑 多集案件 · 共 {siblings.length} 集
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {siblings.map((s) => {
+                const active = s.id === c.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => focus(s.id)}
+                    className={
+                      "rounded-md border px-3 py-1 text-xs font-medium transition " +
+                      (active
+                        ? "border-accent-neon bg-accent-neon/15 text-accent-neon"
+                        : "border-ink-700 text-gray-400 hover:border-ink-600 hover:text-gray-200")
+                    }
+                  >
+                    {active ? "▶ " : ""}
+                    {s.episodeLabel}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="aspect-video overflow-hidden rounded-md border border-ink-700 bg-black">
           <iframe

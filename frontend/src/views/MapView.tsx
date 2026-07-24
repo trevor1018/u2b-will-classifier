@@ -22,6 +22,12 @@ interface RenderablePoint {
   city: string | undefined;
 }
 
+// A non-primary episode (下集, 第二集…) of a multi-part case. Its marker is
+// folded into the 上集's marker; the drawer exposes it via the episode tabs.
+function isSecondaryEpisode(c: CaseRecord): boolean {
+  return c.episodeGroup != null && (c.episodeIndex ?? 0) > 0;
+}
+
 function expandPoints(c: CaseRecord): RenderablePoint[] {
   if (c.points && c.points.length > 0) {
     return c.points.map((p, i) => ({
@@ -61,6 +67,9 @@ function buildDisplayCoords(
   const groups = new Map<string, RenderablePoint[]>();
   // Walk all renderable points (one case can contribute multiple)
   for (const c of allCases) {
+    // Secondary episodes (下集…) collapse into their 上集 marker — skip them
+    // here so a multi-part case occupies a single position, not a jittered pair.
+    if (isSecondaryEpisode(c)) continue;
     for (const p of expandPoints(c)) {
       // ~1km bucket. Two markers within 1km share a key and get visually
       // separated by jitter; otherwise their exact distinct coords stay.
@@ -124,6 +133,16 @@ export function MapView() {
     () => buildDisplayCoords(allCases),
     [allCases],
   );
+
+  // How many episodes each multi-part group has, so the collapsed marker's
+  // tooltip can say "共 N 集".
+  const episodeGroupSize = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of allCases) {
+      if (c.episodeGroup) m.set(c.episodeGroup, (m.get(c.episodeGroup) ?? 0) + 1);
+    }
+    return m;
+  }, [allCases]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -206,6 +225,8 @@ export function MapView() {
       // Pass 1: figure out additions. Each case may contribute >1 marker
       // when it carries a `points` array (e.g. cruise compilation).
       for (const c of cases) {
+        // Fold secondary episodes into the 上集 marker (see buildDisplayCoords).
+        if (isSecondaryEpisode(c)) continue;
         for (const p of expandPoints(c)) {
           next.add(p.key);
           if (existing.has(p.key)) continue;
@@ -232,13 +253,18 @@ export function MapView() {
           const memberBadge = c.memberOnly
             ? `<span style="margin-left:6px;padding:1px 5px;border-radius:3px;background:rgba(251,191,36,0.18);color:#fbbf24;font-size:10px;">🔒 會員</span>`
             : "";
+          const epCount = c.episodeGroup ? episodeGroupSize.get(c.episodeGroup) ?? 0 : 0;
+          const episodeBadge =
+            epCount > 1
+              ? `<div style="font-size:11px;color:#38bdf8;">📑 多集案件 · 共 ${epCount} 集</div>`
+              : "";
           m.bindTooltip(
             () =>
               `<div style="font-size:11px;color:#a3e635;text-transform:uppercase;letter-spacing:.05em;">
                   ${CASE_TYPE_LABEL[c.caseType]} · ${STATUS_LABEL[c.status]}${memberBadge}
                 </div>
                 <div style="font-size:12px;font-weight:700;color:#f3f4f6;">${escapeHtml(c.caseName)}</div>
-                <div style="font-size:11px;color:#9ca3af;">${escapeHtml(tooltipCity)} · ${c.crimeYear ?? "?"}</div>`,
+                <div style="font-size:11px;color:#9ca3af;">${escapeHtml(tooltipCity)} · ${c.crimeYear ?? "?"}</div>${episodeBadge}`,
             { direction: "top", offset: [0, -2], opacity: 0.95, sticky: true },
           );
           m.on("click", () => focusRef.current(c.id));

@@ -79,6 +79,15 @@ export interface CaseRecord {
   memberOnly?: boolean;
   /** Free-form tags from title brackets (e.g. ["懸案", "DNA"]) */
   tags?: string[];
+  /** Multi-part episode grouping (上/下集). Cases sharing an `episodeGroup`
+   *  are parts of the same case: the map collapses them to a single marker
+   *  and the detail drawer offers a tab per episode. Set only for cases that
+   *  belong to a 2+-part group. */
+  episodeGroup?: string;
+  /** Human label for this part, e.g. "上集" / "下集" / "第一集". */
+  episodeLabel?: string;
+  /** Sort order within the group (0 = 上集). */
+  episodeIndex?: number;
   /** Optional case milestones — for swimlane drilldown */
   milestones?: Array<{ date: string; event: string }>;
 }

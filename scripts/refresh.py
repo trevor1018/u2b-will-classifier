@@ -1081,6 +1081,15 @@ def build_payload(videos: list[dict[str, Any]], classifications: dict[str, dict[
                 **({"points": cl["points"]} if cl.get("points") else {}),
             }
         )
+    # Stamp episodeGroup / episodeLabel / episodeIndex onto multi-part cases
+    # (上/下集) so the frontend can collapse them to one map marker and offer
+    # an episode toggle in the detail drawer.
+    from find_episodes import annotate_episodes
+
+    n_ep = annotate_episodes(cases)
+    if n_ep:
+        print(f"  annotated {n_ep} episodes across multi-part cases")
+
     cases.sort(key=lambda c: c["publishedAt"], reverse=True)
     return {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
