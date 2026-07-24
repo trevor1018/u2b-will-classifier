@@ -64,6 +64,26 @@ PINS = {
         "country": "美國",
         "note": "fix 加州 → 奧勒岡州 (James Kim family, 2006)",
     },
+    # 黑寡婦筧千佐子 (Chisako Kakehi). Refine 關西地區 → Muko City, Kyoto
+    # Prefecture: her 4th husband died there, she was arrested there, and the
+    # Kyoto District Court sentenced her (2017).
+    "gi2NvbCke3Q": {
+        "lat": 34.9486,
+        "lon": 135.6996,
+        "city": "京都府向日市 (Muko)",
+        "country": "日本",
+        "note": "refine 關西地區 → 京都府向日市 (Chisako Kakehi case)",
+    },
+    # 彭楚盈白骨案 (1999). Refine 香港 → Yau Ma Tei: the model's skeletal
+    # remains were found in a unit at 華德大廈 (Wah Tak Building), Yau Ma Tei,
+    # opposite the fruit market.
+    "f6dY8aq2ra0": {
+        "lat": 22.311,
+        "lon": 114.170,
+        "city": "香港油麻地 (華德大廈)",
+        "country": "中國",
+        "note": "refine 香港 → 油麻地 (彭楚盈白骨案, remains found at 華德大廈)",
+    },
 }
 
 
