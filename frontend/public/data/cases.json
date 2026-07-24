@@ -5272,9 +5272,9 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "海上",
-      "city": "三條郵輪航線 (合集)",
-      "lat": 30.51,
-      "lon": -50.87,
+      "city": "加勒比海 (郵輪墜海合集)",
+      "lat": 21.87,
+      "lon": -78.49,
       "caseType": "mystery",
       "status": "unknown",
       "memberOnly": false,
@@ -13321,9 +13321,9 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "美國",
-      "city": "肯塔基州",
-      "lat": 37.8393,
-      "lon": -84.27,
+      "city": "猶他州",
+      "lat": 39.321,
+      "lon": -111.094,
       "caseType": "missing",
       "status": "cold",
       "memberOnly": false,
@@ -14680,9 +14680,9 @@
       "crimeYear": null,
       "resolveYear": null,
       "country": "美國",
-      "city": "康乃狄克州",
-      "lat": 41.5978,
-      "lon": -72.7554,
+      "city": "紐敦 (Newtown, CT)",
+      "lat": 41.4137,
+      "lon": -73.3037,
       "caseType": "missing",
       "status": "solved",
       "memberOnly": false,
@@ -15908,7 +15908,10 @@
       "status": "cold",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "馬德琳·麥肯案",
+      "episodeLabel": "下集",
+      "episodeIndex": 1
     },
     {
       "id": "kv2yKRPIydg",
@@ -15931,7 +15934,10 @@
       "status": "cold",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "馬德琳·麥肯案",
+      "episodeLabel": "上集",
+      "episodeIndex": 0
     },
     {
       "id": "wXJKyskcUvc",
@@ -16000,7 +16006,10 @@
       "status": "solved",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "貝恩家庭滅門案",
+      "episodeLabel": "下集",
+      "episodeIndex": 1
     },
     {
       "id": "PIFRbp-m5YA",
@@ -16023,7 +16032,10 @@
       "status": "solved",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "貝恩家庭滅門案",
+      "episodeLabel": "上集",
+      "episodeIndex": 0
     },
     {
       "id": "WeGW1jW_kU0",
@@ -16046,7 +16058,10 @@
       "status": "unknown",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "無法完成的尋寶遊戲",
+      "episodeLabel": "下集",
+      "episodeIndex": 1
     },
     {
       "id": "5mheKuU9Jmw",
@@ -16069,7 +16084,10 @@
       "status": "unknown",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "無法完成的尋寶遊戲",
+      "episodeLabel": "上集",
+      "episodeIndex": 0
     },
     {
       "id": "zfySwW7uWK4",
@@ -16138,7 +16156,10 @@
       "status": "solved",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "普克卡瓦血屋案",
+      "episodeLabel": "下集",
+      "episodeIndex": 1
     },
     {
       "id": "E8R85Gtwwj0",
@@ -16176,15 +16197,18 @@
       "commentCount": 1355,
       "crimeYear": null,
       "resolveYear": null,
-      "country": "芬蘭",
+      "country": "紐西蘭",
       "city": "普克卡瓦",
-      "lat": 62.5,
-      "lon": 25.7667,
+      "lat": -37.8,
+      "lon": 174.9,
       "caseType": "mystery",
       "status": "unknown",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "普克卡瓦血屋案",
+      "episodeLabel": "上集",
+      "episodeIndex": 0
     },
     {
       "id": "V_Qj3vybB2A",
@@ -16253,7 +16277,10 @@
       "status": "solved",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "辛普森案",
+      "episodeLabel": "下集",
+      "episodeIndex": 1
     },
     {
       "id": "1zL_mG5JIdw",
@@ -16276,7 +16303,10 @@
       "status": "solved",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "辛普森案",
+      "episodeLabel": "上集",
+      "episodeIndex": 0
     },
     {
       "id": "-BE54bQunYo",
