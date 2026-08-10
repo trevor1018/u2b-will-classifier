@@ -1,0 +1,47 @@
+# crimeYear 空白清單 — 逐筆排查。填法：在該行開頭的 crimeYear 欄補年份，或標 NA。
+# category: NA=非單一事件(建議留空) COMP=合集(無單一年) 空=待查
+# 欄位(tab 分隔): category | crimeYear(待填) | video_id | views | country/city | status | resolveYear | caseName | url
+	____	gsEOnCFMyvs	2687282	英國/布里斯托 (Bristol)	solved		英國女子公寓失蹤案	https://youtu.be/gsEOnCFMyvs
+	____	S3iNNQnku-I	1757983	美國/加州	unknown	2016	麥克奈爾的三次越獄故事	https://youtu.be/S3iNNQnku-I
+	____	2pX4AfnCCl0	1396446	加拿大/安大略省	unknown		加拿大八角穀倉謀殺案	https://youtu.be/2pX4AfnCCl0
+	____	uAJW9NriR8U	1338522	法國/穆然	unknown		法國穆然地下密室案	https://youtu.be/uAJW9NriR8U
+	____	corAAPSb9gY	1324236	美國/洛杉磯	solved		高中女子啦啦隊長臥室死亡案	https://youtu.be/corAAPSb9gY
+	____	w0oK63fVSww	1297966	日本/三重縣四日市市	unknown		女生參加煙火晚會後失蹤案	https://youtu.be/w0oK63fVSww
+	____	Y3wPfiXLFRA	1197414	日本/恩納村	unknown		潛入藍洞之底的潛水故事	https://youtu.be/Y3wPfiXLFRA
+	____	XcF7IwIpJHk	1195464	韓國/梧倉	unknown		韓國梧倉懸屍案	https://youtu.be/XcF7IwIpJHk
+	____	f5de5eqg7JM	1183199	美國/北卡羅萊納州夏洛特卡托巴河 (Catawba River, Charlotte, NC)	unknown		河邊車禍案	https://youtu.be/f5de5eqg7JM
+	____	OtBk6z6EdiY	1165531	美國/肯塔基州	unknown		咕嚕洞災難	https://youtu.be/OtBk6z6EdiY
+	____	wHNKtYo68Eo	1142893	日本/南丹市	unknown		陽光男孩離奇失蹤案	https://youtu.be/wHNKtYo68Eo
+	____	WeGW1jW_kU0	1112530	美國/賓州伊利市 PNC Bank (Erie, PA)	unknown		無法完成的尋寶遊戲（下）	https://youtu.be/WeGW1jW_kU0
+	____	ySeY4chzauQ	968939	美國/田納西州富蘭克林縣	unknown		路邊火堆發現案	https://youtu.be/ySeY4chzauQ
+	____	q0_TO-Apfk4	956854	美國/佛羅里達州	unknown		佛州鐵軌旁的男子	https://youtu.be/q0_TO-Apfk4
+	____	l3HdKmQa2es	949359	英國/布雷肯比肯斯	unknown		威爾士鑰匙洞潛水事件	https://youtu.be/l3HdKmQa2es
+	____	t5ECoPx5tjg	912122	菲律賓/馬尼拉	unknown		菲律賓遊客連環綁架案	https://youtu.be/t5ECoPx5tjg
+	____	ffSGKjYrFM4	875106	美國/新罕布什爾州羅金厄姆縣 (Rockingham County, NH)	unknown		妻子在學校加班丈夫遭暗算事件	https://youtu.be/ffSGKjYrFM4
+	____	GeYcRKc2t5k	817232	西班牙/巴拉角	unknown		西班牙阿克茨洞潛水事件	https://youtu.be/GeYcRKc2t5k
+	____	UMuUeTSOsa8	812605	義大利/阿萊蓋	unknown		義大利阿萊蓋小鎮連環命案	https://youtu.be/UMuUeTSOsa8
+	____	TNjqP6PxoJg	778521	美國/佛羅里達州塔拉哈西 (Tallahassee, FL)	partial		大學教授車庫遇襲案	https://youtu.be/TNjqP6PxoJg
+	____	jJt3g0r3eVc	774935	日本/鈴鹿市	unknown		鈴鹿年下丈夫事件	https://youtu.be/jJt3g0r3eVc
+	____	HAFoiDXKexk	773275	美國/門羅	unknown		門羅運鈔車劫案	https://youtu.be/HAFoiDXKexk
+	____	CcECLooSFdA	765680	英國/伦敦	cold		朗埃克巷案	https://youtu.be/CcECLooSFdA
+	____	d3C4yi8YB_g	734111	菲律賓/宿霧州（推測）	unknown		菲律賓希納圖安魔法河水下洞穴探索	https://youtu.be/d3C4yi8YB_g
+	____	YYvUTv7iXnA	713762	美國/紐約	unknown	2011	貝特萊奇偽畫案	https://youtu.be/YYvUTv7iXnA
+	____	osdjWD5v_jQ	649114	英國/伦敦	unknown		斯潘塞莊園失蹤案	https://youtu.be/osdjWD5v_jQ
+	____	PSYjNvIvUR4	603947	義大利/羅馬	cold		西蒙內塔羅馬謎案	https://youtu.be/PSYjNvIvUR4
+	____	ZENRknr_SXM	462280	泰國/谷谷村	unknown		泰國谷谷村失蹤案	https://youtu.be/ZENRknr_SXM
+	____	SNG2c7WhpRE	453348	義大利/帕維亞省加爾拉斯科 (Garlasco)	unknown		義大利樓梯懸案	https://youtu.be/SNG2c7WhpRE
+	____	ie4Hg72C84o	292660	巴西/馬托格羅索州	unknown		杜杜潟湖洞穴潛水迷途事件	https://youtu.be/ie4Hg72C84o
+	____	kLrnbb2cRaE	0	台灣/台中市	unknown		台中男子電梯失蹤案	https://youtu.be/kLrnbb2cRaE
+	____	2_25umHPFVg	0	香港/香港	solved		香港和興大廈情殺案	https://youtu.be/2_25umHPFVg
+	____	uB7Wt_C396w	0	法國/巴黎	unknown		凱爾的幽靈	https://youtu.be/uB7Wt_C396w
+	____	5RvK3H9Zuog	0	澳洲/立灣	unknown		悉尼娃娃臉殺手案	https://youtu.be/5RvK3H9Zuog
+	____	c7f7k4mWR-Q	0	美國/佛羅里達州希爾斯伯勒縣坦帕 (Tampa, FL)	unknown		廣告奸魔案	https://youtu.be/c7f7k4mWR-Q
+	____	RT6Ja63Y5uQ	0	韓國/首爾	cold		韓國牙醫母女案	https://youtu.be/RT6Ja63Y5uQ
+NA	____	PMN35ipl0hw	2034768	香港/香港	unknown		鎖羅盆村消失之謎	https://youtu.be/PMN35ipl0hw
+NA	____	3N1YDT32cj0	1207834	美國/羅徹斯特理工大學 (RIT, Rochester NY)	unknown		彭羅斯階梯現象研究	https://youtu.be/3N1YDT32cj0
+NA	____	VYfbB2hMk-U	1191284	香港/新界東北部	unknown		香港新娘潭靈異事件	https://youtu.be/VYfbB2hMk-U
+NA	____	cUnQSoZJDSw	734970	日本/福岡縣	unknown		犬鳴村	https://youtu.be/cUnQSoZJDSw
+NA	____	XobDfLn5PVk	688801	日本/本所	unknown		本所七大不可思議	https://youtu.be/XobDfLn5PVk
+NA	____	dRuEt_4GfhE	650318	美國/查爾斯頓	unknown		查爾斯頓老城監獄靈異事件	https://youtu.be/dRuEt_4GfhE
+COMP	____	OUmFmt9X9rc	583061	海上/加勒比海 (郵輪墜海合集)	unknown		郵輪墜海事件集	https://youtu.be/OUmFmt9X9rc
+COMP	____	DD9xcc3yEX0	0	美國/三州 (Council Bluffs IA / Port Clinton OH / Valdosta GA)	unknown		三則離奇意外（合集）	https://youtu.be/DD9xcc3yEX0

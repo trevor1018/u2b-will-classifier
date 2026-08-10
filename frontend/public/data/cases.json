@@ -16103,7 +16103,7 @@
       "milestones": [],
       "episodeGroup": "馬德琳·麥肯案",
       "episodeLabel": "下集",
-      "episodeIndex": 1
+      "episodeIndex": 2
     },
     {
       "id": "kv2yKRPIydg",
@@ -16201,7 +16201,7 @@
       "milestones": [],
       "episodeGroup": "貝恩家庭滅門案",
       "episodeLabel": "下集",
-      "episodeIndex": 1
+      "episodeIndex": 2
     },
     {
       "id": "PIFRbp-m5YA",
@@ -16253,7 +16253,7 @@
       "milestones": [],
       "episodeGroup": "無法完成的尋寶遊戲",
       "episodeLabel": "下集",
-      "episodeIndex": 1
+      "episodeIndex": 2
     },
     {
       "id": "5mheKuU9Jmw",
@@ -16351,7 +16351,7 @@
       "milestones": [],
       "episodeGroup": "普克卡瓦血屋案",
       "episodeLabel": "下集",
-      "episodeIndex": 1
+      "episodeIndex": 2
     },
     {
       "id": "E8R85Gtwwj0",
@@ -16364,17 +16364,20 @@
       "viewCount": 1328757,
       "likeCount": 14027,
       "commentCount": 989,
-      "crimeYear": null,
+      "crimeYear": 1970,
       "resolveYear": null,
-      "country": "芬蘭",
+      "country": "紐西蘭",
       "city": "普克卡瓦",
-      "lat": 62.6521,
-      "lon": 25.8122,
+      "lat": -37.8,
+      "lon": 174.9,
       "caseType": "mystery",
       "status": "unknown",
       "memberOnly": false,
       "tags": [],
-      "milestones": []
+      "milestones": [],
+      "episodeGroup": "普克卡瓦血屋案",
+      "episodeLabel": "中集",
+      "episodeIndex": 1
     },
     {
       "id": "QPWmMHorrcc",
@@ -16472,7 +16475,7 @@
       "milestones": [],
       "episodeGroup": "辛普森案",
       "episodeLabel": "下集",
-      "episodeIndex": 1
+      "episodeIndex": 2
     },
     {
       "id": "1zL_mG5JIdw",

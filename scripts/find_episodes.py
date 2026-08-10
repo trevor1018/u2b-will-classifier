@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 
-EP = r"(上集|下集|上篇|下篇|前篇|後篇|完結篇|第[一二三四五]集|[上下])"
+EP = r"(上集|中集|下集|上篇|中篇|下篇|前篇|後篇|完結篇|第[一二三四五]集|[上中下])"
 # A title carries an episode marker if any of these appear.
 TITLE_MARK = re.compile(r"[（(]" + EP + r"[)）]|上集|下集|前篇|後篇|完結篇")
 # Embedded named series inside parens, e.g. （馬德琳·麥肯案 下集）
@@ -50,7 +50,9 @@ def episode_meta(title: str, case_name: str) -> tuple[str | None, int]:
     if m:
         return (f"第{m.group(1)}集", _ZH_NUM.index(m.group(1)))
     if re.search(r"後篇|完結篇|下集|[（(]下[)）]", t):
-        return ("下集", 1)
+        return ("下集", 2)
+    if re.search(r"中篇|中集|[（(]中[)）]", t):
+        return ("中集", 1)
     if re.search(r"前篇|上集|[（(]上[)）]", t):
         return ("上集", 0)
     return (None, 0)

@@ -84,6 +84,18 @@ PINS = {
         "country": "中國",
         "note": "refine 香港 → 油麻地 (彭楚盈白骨案, remains found at 華德大廈)",
     },
+    # 普克卡瓦血屋案（中）— a new middle episode that came in via a weekly
+    # refresh with the same Finland geo bug as the （上）once had, and no year.
+    # Pukekawa is in Waikato, NZ (the 1970 Crewe murders); aligned to the
+    # （上）/（下）episodes' coords + crimeYear so all three are consistent.
+    "E8R85Gtwwj0": {
+        "lat": -37.8,
+        "lon": 174.9,
+        "city": "普克卡瓦",
+        "country": "紐西蘭",
+        "crimeYear": 1970,
+        "note": "fix 芬蘭 → 紐西蘭 + crimeYear 1970; match （上）/（下）episodes",
+    },
 }
 
 
@@ -95,6 +107,10 @@ def main():
         cache[vid]["lon"] = pin["lon"]
         cache[vid]["city"] = pin["city"]
         cache[vid]["country"] = pin["country"]
+        # Optional ground-truth year overrides.
+        for yk in ("crimeYear", "resolveYear"):
+            if yk in pin:
+                cache[vid][yk] = pin[yk]
         print(f"  pinned {vid}: {pin['note']}  ->  ({pin['lat']}, {pin['lon']})")
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"updated {len(PINS)} cache entries")
