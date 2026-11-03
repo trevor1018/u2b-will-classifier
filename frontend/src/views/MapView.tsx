@@ -164,12 +164,16 @@ export function MapView() {
       preferCanvas: true,
       zoomControl: true,
     });
+    // Esri "World Dark Gray Base" — free, no API key, keeps the dark theme.
+    // (CARTO's basemaps.cartocdn.com now serves an "API KEY REQUIRED"
+    // watermark tile for keyless requests, which broke the map.)
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
       {
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: "abcd",
+          'Tiles &copy; <a href="https://www.esri.com/">Esri</a> — Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+        maxNativeZoom: 16, // Esri Dark Gray tops out at z16; upscale beyond
+        maxZoom: 18,
       },
     ).addTo(map);
 
